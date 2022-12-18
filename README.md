@@ -1,3 +1,3 @@
-# coding-total
+### coding-total
 
-# 코딩 연습 기록
+### 코딩 연습 기록
