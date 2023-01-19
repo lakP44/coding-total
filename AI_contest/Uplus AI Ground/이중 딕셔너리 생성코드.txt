@@ -1,0 +1,32 @@
+# watch_df = pd.read_csv(os.path.join(data_path, 'watch_e_data_add_profile.csv'), encoding='utf-8')
+
+def make_double_dictionary(target_data, column1, column2, column3):
+    '''
+    컬럼 1은 가장 밖의 키, 컬럼 2는 값으로 들어갈 이중 딕셔너리의 키, 컬럼3은 이중 딕셔너리의 값을 의미합니다
+    ex) {column1 : {column2 : column3}}, {profile_id : {album_id : watch_time}}
+    
+    접근방법은 아래 딕셔너리와 같이 "변수명[컬럼명]"으로 가능합니다
+    '''
+    x = {}
+    drop_dupl = target_data.drop_duplicates([column1],  keep='first').reset_index(drop = True)
+    drop_num = drop_dupl.loc[:, column1] # 0이면 프로필 아이디3, 1이면 프로필 아이디 5
+    
+    for i in range (drop_dupl.shape[0]): # 얘가 3일때
+        y = {}
+        feat_num = target_data.loc[target_data[column1] == drop_num[i]][[column2, column3]].reset_index(drop = True)
+        
+        for b in range (feat_num.shape[0]): # profile_id가 3인 데이터프레임이 쫙 돌아감
+            y.setdefault(feat_num.loc[b, column2], feat_num.loc[b, column3])
+        
+        x.setdefault(drop_num[i], y)
+                                   
+    target_features = {}
+    target_features.setdefault(column3, x)
+    return target_features
+
+
+# 사용예시
+
+watch_features = make_double_dictionary(watch_df, 'profile_id', 'album_id', 'watch_time')
+print(dict(islice(watch_features['watch_time'].items(), 3)))
+print("watch_df 3의 album 15의 watch_time 정보 :", watch_features['watch_time'][3][15])
