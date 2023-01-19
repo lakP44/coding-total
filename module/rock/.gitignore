@@ -1,0 +1,6 @@
+build/
+dist/
+rock_pre_h.egg-info/
+
+setup.py
+train.csv
