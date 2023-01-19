@@ -1,0 +1,19 @@
+https://drive.google.com/drive/folders/1nvX639d-Pz-PkICtpNXPY_hg6Ake4MVo?usp=share_link
+
+baseline 이해용 코드
+
+baseline_for_understanding.ipynb
+
+baseline (feature sex 추가, data를 watch_e_data로 변경)
+
+baseline_for_remodeling2.ipynb
+
+baseline (feature sex , pr_interest_keyword_cd1, ch_interest_keyword_cd1 추가)
+
+baseline_for_remodeling3.ipynb
+
+baseline (feature sex , pr_interest_keyword_cd1, ch_interest_keyword_cd1, watch_time 추가, epoch = 7)
+
+baseline_for_remodeling4.ipynb
+
+(현재 최고 성능 코드는 baseline_for_remodeling4.ipynb)
