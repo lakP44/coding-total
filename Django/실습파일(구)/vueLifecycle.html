@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>06-01</title>
+</head>
+<body>
+  <div id="simple">
+    <input type="text" v-model="message" /><br>
+    <button type="button" @click="getData">Get</button>
+    <button type="button" @click="setData">Set</button>
+  </div>
+  
+  <script src="https://unpkg.com/vue@next"></script>
+  <script type="text/javascript">
+
+    var TestApp = {
+      data(){
+        console.log("data()")
+        return{
+          message : "hello",
+        }
+      },
+       
+      methods:{
+        getData(){
+          alert(this.message)
+        },
+        setData(){
+          this.message = "good"
+        },
+      },
+
+      watch: {
+        message: function(){
+            console.log("watch의 message()",this.message)
+        }
+      },
+
+      beforeCreate(){
+        console.log("beforeCreate()", this.message)
+      },
+
+      created(){
+        console.log("created()", this.message)
+      },
+
+      beforeMount(){
+        alert("beforeMount()")
+        console.log("beforeMount()")
+      },
+
+      mounted(){
+        alert("mounted()")
+        console.log("mounted()")
+      },
+
+      beforeUpdate(){
+        console.log("beforeUpdate()")
+      },
+
+      updated(){
+        console.log("updated()")
+      },
+
+      beforeDestory(){
+       console.log("beforeUnbeforeDestory()")
+      },
+
+      destoryed(){
+        console.log("destoryed()")
+      }
+
+     } 
+    
+    Vue.createApp(TestApp).mount('#simple')
+  </script>
+</body>
+</html>

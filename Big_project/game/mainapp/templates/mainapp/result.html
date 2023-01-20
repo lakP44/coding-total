@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static %} 
+
+{% block style %}
+<style>
+  .size-btn {
+    width: 5rem;
+    height: 5rem;
+    align-items: center;
+    display: flex;
+  }
+
+  .img-wrapper {
+    height: 200px;
+  }
+</style>
+{% endblock style %}
+
+
+{% block content %}
+<div class="container">
+
+  {% include 'core/components/back-button.html' %}
+
+  <div class="my-3 fs-1 fw-bold  text-center">
+    <p>게임 결과</p>
+  </div>
+
+  <!-- 얼굴 나이 -->
+  <div class="text-center fw-bold">
+    <div class="fs-3">얼굴 나이 {{age_predicted}}살</div>
+  </div>
+
+  <!-- 얼굴 이미지 -->
+  <div class="img-wrapper my-4 text-center">
+    <img src="{{face_image}}" alt="face" >
+  </div>
+
+  <!-- 얼굴 분석 문구 -->
+  <div class="text-center fw-bold">
+    <div class="fs-5">왼쪽 눈 운동 {{ left_eye_cnt }}번</div>
+    <div class="fs-5">오른쪽 눈 운동 {{ right_eye_cnt }}번</div>
+    <div class="fs-5">입 운동 {{ mouth_cnt }}번</div>
+  </div>
+  
+
+  <!-- 버튼 -->
+  <div class="mt-5 d-flex justify-content-evenly">
+    <a class="btn rounded-circle size-btn" style="background-color: #ac2bac;" href="/mainapp/recsys" role="button">
+      <img class="img-fluid" src="{% static 'images/product.png' %}" alt="제품 추천 보기">
+    </a>
+    <a class="btn rounded-circle size-btn" style="background-color: #ac2bac;" href="/mainapp/main" role="button">
+      <img class="img-fluid" src="{% static 'images/home.png' %}" alt="홈으로 이동">
+    </a>
+    <a class="btn rounded-circle size-btn" style="background-color: #ac2bac;" role="button" onclick="window.history.back();">
+      <img class="img-fluid" src="{% static 'images/retry.png' %}" alt="다시하기">
+    </a>
+  </div>
+</div>
+{% endblock content %}

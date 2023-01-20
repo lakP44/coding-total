@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block style %}
+<style>
+  div {
+    margin-top: 2rem;
+  }
+  .form-outline {
+    border-bottom: 1px solid; !important
+  }
+  .fa-kakao {
+    color: #000000;
+  }
+  .fa-naver {
+    font-family: Arial;
+    font-weight: bold;
+    font-size: 14px;
+    color: #fff;
+  }
+  .fa-naver:before {
+    content: 'N';
+  }
+  #local-login-btn {
+    border-radius: 30% 5%;
+  }
+</style>
+{% endblock style %}
+
+
+
+{% block content %}
+<div class="container">
+  {% include 'core/components/back-button.html' %}
+  <div class="mb-8">
+    <h1>Welcome!</h1>
+    <p class="fs-3">이메일과 비밀번호를 입력하여 로그인해주세요</p>
+  </div>
+  
+  <!-- form -->
+  <div class="form-outline">
+      <input id="name" class="input-form form-control"/>
+      <label class="form-label" for="name">Username</label>
+  </div>
+  <div class="form-outline">
+
+      <input id="pw" class="input-form form-control"/>
+      <label class="form-label" for="pw">Password</label>
+  </div>
+  
+  <!-- social login -->
+  <div class="d-flex justify-content-evenly">
+    <a class="btn text-white btn-lg btn-floating" style="background-color: #FEE500;" href="/accounts/kakao/login/" role="button">
+      <i class="fas fa-comment fa-kakao"></i>
+    </a>
+    <a class="btn text-white btn-lg btn-floating" style="background-color: #03C75A;" href="/accounts/naver/login/" role="button">
+      <i class="fas fa-naver"></i>
+    </a>
+    <a class="btn text-white btn-lg btn-floating" style="background-color: #111;" href="/accounts/google/login/" role="button">
+      <i class="fab fa-apple"></i>
+    </a>
+  </div>
+
+  <!-- local login -->
+  <div class="d-flex justify-content-center">
+    <button id="local-login-btn" class="btn text-white btn-lg fs-5 px-5" style="background-color: #ac2bac;" role="button">
+      login
+    </button>
+  </div>
+
+</div>
+{% endblock content %}

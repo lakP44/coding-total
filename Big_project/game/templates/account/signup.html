@@ -1,0 +1,75 @@
+
+{% extends "account/auth_base.html" %}
+{% load i18n %}
+{% load account socialaccount %}
+
+<!--{% block head_title %}{% trans "Signup" %}{% endblock %}-->
+{% block style %}
+{% endblock style %}
+
+
+{% block content %}
+<!--h1>{% trans "Sign Up" %}</h1-->
+
+
+
+<div class="container">
+  {% include 'core/components/back-button.html' %}
+  <div class="mb-8 custom-mb">
+    <h1>Create Account :)</h1>
+    <p class="fs-3">{% blocktrans %}Already have an account? Then please <a href="{{ login_url }}">sign in</a>.{% endblocktrans %}</p>
+    {% comment %} <p class="fs-3">닉네임과 비밀번호를 입력하여 로그인해주세요</p> {% endcomment %}
+  </div>
+
+  
+  <!-- form -->
+  <form class="signup" id="signup_form" method="POST" action="{% url 'account_signup' %}">
+    {% csrf_token %}
+
+    <!-- {{ form.as_p }} -->
+
+    {{ form.non_field_errors | safe }}
+
+    <!-- {{ form.as_p }} -->
+
+    <div class="form-outline custom-mb">
+      <input type="text" class="input-form form-control" name="username" placeholder="유저 이름" autocomplete="username" minlength="1" maxlength="150" required="" id="id_username">
+      <label class="form-label" for="id_username">Username</label>
+    </div>
+    {{ form.username.errors | safe }}
+    
+    <div class="form-outline custom-mb">
+      <input type="email" class="input-form form-control" name="email" placeholder="이메일" autocomplete="email" id="id_email">
+      <label class="form-label" for="id_email">E-mail</label>
+    </div>
+    {{ form.email.errors | safe }}
+    
+    <div class="form-outline custom-mb">
+      <input type="password" class="input-form form-control" name="password1" placeholder="비밀번호" autocomplete="new-password" required="" id="id_password1">
+      <label class="form-label" for="id_password1">Password</label>
+    </div>
+    {{ form.password1.errors | safe }}
+    
+    <div class="form-outline custom-mb">
+      <input type="password" class="input-form form-control" name="password2" placeholder="비밀번호 (확인)" autocomplete="new-password" required="" id="id_password2">
+      <label class="form-label" for="id_password2">Password Again</label>
+    </div>
+    {{ form.password2.errors | safe }}
+
+    {% if redirect_field_value %}
+    <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+    {% endif %}
+
+    <!-- local login btn -->
+    <div class="d-flex justify-content-center custom-mb">
+      <button class="btn text-white btn-lg fs-5 px-5 auth-btn" style="background-color: #ac2bac;" type="submit" role="button">
+        join
+      </button>
+    </div>
+    
+  </form>
+</div>
+
+
+
+{% endblock %}

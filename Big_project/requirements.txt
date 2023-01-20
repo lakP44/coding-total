@@ -1,0 +1,16 @@
+django-allauth
+djangorestframework
+markdown
+django-filter
+Pillow
+gunicorn
+WhiteNoise
+daphne
+channels
+channels-redis
+redis
+Twisted[tls,http2]
+psycopg2-binary
+dj-database-url
+base64
+tensorflow

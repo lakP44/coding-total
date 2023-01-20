@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+    <script defer src="face-api.min.js"></script>
+    <script defer src="script.js"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center
+        position: relative;
+      }
+
+      canvas,
+      video {
+        position: absolute;
+        /* left: 0;
+        top: 0; */
+      }
+
+      button {
+        position: absolute;
+        bottom: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <video id="video" width="720" height="560" autoplay muted></video>
+    <button onclick="partShot()">partShot</button>
+  </body>
+
+  <script src="window_capture.js"></script>
+
+  <script>
+    function partShot() {
+      //특정부분 스크린샷
+      for (var i = 1; i < 10; i++) {
+        const str1 = String(i);
+        (function (x) {
+          setTimeout(function () {
+            html2canvas(document.getElementById("video"))
+              //id container 부분만 스크린샷
+              .then(function (canvas) {
+                //jpg 결과값
+                drawImg(canvas.toDataURL("image/jpeg"));
+                //이미지 저장
+                saveAs(canvas.toDataURL(), "test1file-name" + str1 + ".jpg");
+              })
+              .catch(function (err) {
+                console.log(err);
+              });
+          }, 500 * x);
+        })(i);
+      }
+    }
+
+    function drawImg(imgData) {
+      console.log(imgData);
+      //imgData의 결과값을 console 로그롤 보실 수 있습니다.
+      return new Promise(
+        function reslove() {
+          //내가 결과 값을 그릴 canvas 부분 설정
+          var canvas = document.getElementById("canvas");
+          var ctx = canvas.getContext("2d");
+          //canvas의 뿌려진 부분 초기화
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          var imageObj = new Image();
+          imageObj.onload = function () {
+            ctx.drawImage(imageObj, 0, 0);
+            //canvas img를 그리겠다.
+          };
+          imageObj.src = imgData;
+          //그릴 image데이터를 넣어준다.
+        },
+        function reject() {}
+      );
+    }
+    function saveAs(uri, filename) {
+      var link = document.createElement("a");
+      if (typeof link.download === "string") {
+        link.href = uri;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        window.open(uri);
+      }
+    }
+  </script>
+</html>

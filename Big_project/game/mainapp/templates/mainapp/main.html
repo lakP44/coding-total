@@ -1,0 +1,612 @@
+{% extends "base.html" %}
+{%load static%}
+{% block script %}
+  <script src={% static 'js/window.js' %}></script>
+  <script>
+    const COLOR_PRIMARY = 0xF5F5F5;
+    const COLOR_LIGHT = 0xD0CCCC;
+    const COLOR_DARK = 0x260e04;
+    let name
+    let profile
+
+    var createPanel = function (scene, data, state) {
+      var sizer = scene
+        .rexUI
+        .add
+        .sizer({
+          orientation: 'y',
+          space: {
+            item: 10
+          }
+        })
+        .add(createTable(scene, data, state, 3), { // child
+          expand: true
+        })
+      return sizer;
+    }
+
+    var createTable = function (scene, data, key, columns) {
+      var capKey = key
+        .charAt(0)
+        .toUpperCase() + key.slice(1);
+      var title = scene
+        .rexUI
+        .add
+        .label({
+          orientation: 'y',
+          text: scene
+            .add
+            .text(0, 0, capKey, {
+              color: 'black',
+              font: '450 16px Arial'
+            })
+        });
+
+      var items = data[key];
+      var rows = Math.ceil(items.length / columns);
+      var table = scene
+        .rexUI
+        .add
+        .gridSizer({
+          column: columns,
+          row: rows,
+
+          rowProportions: 1,
+          space: {
+            column: 10,
+            row: 10
+          },
+          name: key // Search this name to get table back
+        });
+
+      var item,
+        r,
+        c;
+      var iconSize = 70;
+      for (var i = 0, cnt = items.length; i < cnt; i++) {
+        item = items[i];
+        r = i % columns;
+        c = (i - r) / columns;
+        table.add(createIcon(scene, item, 50, 30), r, c, 'top', 0, true);
+      }
+      return scene
+        .rexUI
+        .add
+        .sizer({
+          orientation: 'y',
+          space: {
+            left: 15,
+            right: 10,
+            top: 10,
+            bottom: 10,
+            item: 10
+          }
+        })
+        .addBackground(scene.rexUI.add.roundRectangle(0, 0, 0, 0, 0, undefined).setStrokeStyle(2, COLOR_LIGHT, 1))
+        .add(title, // child
+            0, // proportion
+            'left', // align
+            0, // paddingConfig
+            true)
+        .add(table, // child
+            1, // proportion
+            'center', // align
+            0, // paddingConfig
+            true);
+    }
+    // panel에 아이콘으로 아이템 이미지를 보여주기 위함
+    var createIcon = function (scene, item, iconWidth, iconHeight) {
+      var label = scene
+        .rexUI
+        .add
+        .label({
+          orientation: 'y',
+          icon: scene
+            .rexUI
+            .add
+            .roundRectangle(0, 0, iconWidth, iconHeight, 5, 0xffffff)
+            .setStrokeStyle(1, 0x4f4f4f),
+          text: scene
+            .add
+            .text(0, 0, item.name, {
+              color: 'black',
+              font: '14px Arial'
+            }),
+
+          space: {
+            top: 10,
+            icon: 10
+          }
+        });
+      label.alpha = 0.7
+      return label;
+    };
+
+    async function preload() {
+      this
+        .load
+        .scenePlugin({key: 'rexuiplugin', url: 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexuiplugin.min.js', sceneKey: 'rexUI'})
+      this
+        .load
+        .plugin('rexfilechooserplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexfilechooserplugin.min.js', true)
+      this
+        .load
+        .plugin('rexcanvasplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexcanvasplugin.min.js', true)
+
+      // resource load
+      this
+        .load
+        .image('panel', "{% static '/resource/ui/background.jpg'%}")
+      this
+        .load
+        .image('exit', "{% static '/resource/ui/exitLeft.png'%}")
+      this
+        .load
+        .image('zoom', "{% static '/resource/ui/zoom.png'%}")
+      this
+        .load
+        .image('start', "{% static '/resource/ui/main/start.png'%}")
+      this
+        .load
+        .image('mainline', "{% static '/resource/ui/main/mainline.png'%}")
+      this
+        .load
+        .image('home', "{% static '/resource/ui/main/home.png'%}")
+      this
+        .load
+        .image('survey', "{% static '/resource/ui/main/survey.png'%}")
+      this
+        .load
+        .image('chr', "{% static '/resource/ui/main/character.png'%}")
+      this
+        .load
+        .image('banner', "{% static '/resource/ui/main/banner.png'%}")
+      this
+        .load
+        .image('analysis', "{% static '/resource/ui/main/analysis.png'%}")
+      this
+        .load
+        .image('skills', "{% static '/resource/ui/main/skills.png'%}")
+      this
+        .load
+        .image('store', "{% static '/resource/ui/main/store.png'%}")
+      this
+        .load
+        .image('text', "{% static '/resource/ui/main/text.png'%}")
+      this
+        .load
+        .image('sound_on', "{% static '/resource/ui/main/musicOn.png'%}")
+      this
+        .load
+        .image('sound_off', "{% static '/resource/ui/main/musicOff.png'%}")
+      this
+        .load
+        .image('logout', "{% static '/resource/ui/main/logout.png'%}")
+      this
+        .load
+        .image('confirm', "{% static '/resource/ui/main/confirm.png'%}")
+
+      this
+        .load
+        .audio('title_music', "{% static '/resource/bgm/title_music.mp3'%}")
+
+      // DB에서 유저 이름과 profile이미지를 가져오는 작업
+      await fetch('http://localhost:8000/core/api/user')
+        .then(res => res.json())
+        .then((data) => {
+          name = String(data.username)
+          profile = data.profile_image
+        })
+
+      this
+        .load
+        .image('profile_image', profile)
+
+    }
+
+    async function create() {
+      this.bgm = this
+        .sound
+        .play("title_music", {loop: true})
+      var canvas = this
+        .add
+        .rexCanvas(50, 65, 50, 50)
+        .fill('black');
+      canvas.fitTo = (function (parent) {
+        var newSize = FitTo(this, parent, true);
+        this.setDisplaySize(newSize.width, newSize.height);
+      }).bind(canvas)
+      canvas.fitTo('profile_image')
+
+      // 각종 UI 배치
+
+      var setting = this
+        .add
+        .image(50, 65, 'profile_image')
+        .setInteractive({cursor: 'pointer'})
+      let circle = this
+        .add
+        .circle(50, 65, 25)
+
+      this
+        .add
+        .image(window_width / 2, window_height + 30, 'mainline')
+
+      var home = this
+        .add
+        .image(window_width * 0.17, window_height - 36, 'home')
+        .setInteractive({cursor: 'pointer'})
+
+      var analysis = this
+        .add
+        .image(window_width * 0.4, window_height - 36, 'analysis')
+        .setInteractive({cursor: 'pointer'})
+
+      var store = this
+        .add
+        .image(window_width * 0.63, window_height - 37, 'store')
+        .setInteractive({cursor: 'pointer'})
+
+      var exit = this
+        .add
+        .image(window_width * 0.85, window_height - 36, 'logout')
+        .setInteractive({cursor: 'pointer'})
+
+      var chr = this
+        .add
+        .image(window_width * 0.35, window_height - 170, 'chr')
+        .setInteractive({cursor: 'pointer'})
+
+      var start = this
+        .add
+        .image(window_width * 0.35, window_height / 2, 'start')
+        .setInteractive({cursor: 'pointer'})
+
+      var skills = this
+        .add
+        .image(window_width * 0.82, window_height * 0.6, 'skills')
+        .setInteractive({cursor: 'pointer'})
+
+      var survey = this
+        .add
+        .image(window_width * 0.82, window_height * 0.4, 'survey')
+        .setInteractive({cursor: 'pointer'})
+        .setScale(0.8)
+
+      var banner = this
+        .add
+        .image(window_width / 2, window_height * 0.23, 'banner')
+        .setScale(0.72)
+        .setInteractive({cursor: 'pointer'})
+
+      var text = this
+        .add
+        .image(130, 25, 'text')
+        .setScale(0.8)
+
+      let sound_off = this
+        .add
+        .image(window_width - 29, 30, 'sound_off')
+        .setInteractive({cursor: 'pointer'})
+        .setScale(0.4)
+      let sound_on = this
+        .add
+        .image(window_width - 30, 32, 'sound_on')
+        .setInteractive({cursor: 'pointer'})
+        .setScale(0.4)
+
+      var scene = this
+      setting.on('pointerdown', function () {
+        scene
+          .plugins
+          .get('rexfilechooserplugin')
+          .open({accept: 'image/*', multiple: false})
+          .then(function (result) {
+            var files = result.files;
+            if (files.length) {
+              var url = URL.createObjectURL(files[0])
+              canvas
+                .loadFromURLPromise(url)
+                .then(function () {
+                  URL.revokeObjectURL(url);
+                  canvas.fitTo(setting)
+                  setting.visible = false
+                })
+            }
+          })
+      })
+
+      //설문조사용 데이터 생성
+      var data = {
+        설문조사: [
+          {
+            name: '각질 케어'
+          }, {
+            name: '노폐물 제거'
+          }, {
+            name: '레포츠용'
+          }, {
+            name: '메이크업 베이스'
+          }, {
+            name: '모공 케어'
+          }, {
+            name: '미세먼지 세정'
+          }, {
+            name: '밀착력'
+          }, {
+            name: '부드러운 발림'
+          }, {
+            name: '브라이트닝'
+          }, {
+            name: '블랙헤드 케어'
+          }, {
+            name: '상쾌함'
+          }, {
+            name: '안티에이징'
+          }, {
+            name: '알콜프리'
+          }, {
+            name: '약산성'
+          }, {
+            name: '어린이겸용'
+          }, {
+            name: '영양공급'
+          }, {
+            name: '오일 프리'
+          }, {
+            name: '워터 프루프'
+          }, {
+            name: '유수분 밸선스'
+          }, {
+            name: '윤기 부여'
+          }, {
+            name: '자외선 차단'
+          }, {
+            name: '저자극'
+          }, {
+            name: '주름 케어'
+          }, {
+            name: '지속력'
+          }, {
+            name: '집중 케어'
+          }, {
+            name: '초미세먼지 세정'
+          }, {
+            name: '촉촉함'
+          }, {
+            name: '쿨링감'
+          }, {
+            name: '트러블 케어'
+          }, {
+            name: '사용성'
+          }, {
+            name: '피부 강화'
+          }, {
+            name: '피부결 정돈'
+          }, {
+            name: '피부 보호'
+          }, {
+            name: '피부 유연'
+          }, {
+            name: '피부 진정'
+          }, {
+            name: '피부 탄력'
+          }, {
+            name: '피부톤 보정'
+          }, {
+            name: '피부 투명'
+          }, {
+            name: '피지 조절'
+          }, {
+            name: '피지 케어'
+          }, {
+            name: '향'
+          }, {
+            name: '화이트닝'
+          }, {
+            name: '화이트헤드 케어'
+          }, {
+            name: '흡수력'
+          }
+        ]
+      }
+
+      //설문조사 판넬 생성
+      var surveyPanel = this
+        .rexUI
+        .add
+        .scrollablePanel({
+          x: window_width / 2,
+          y: window_height / 2,
+          width: window_width,
+          height: window_height * 0.75,
+          scrollMode: 0,
+
+          background: this
+            .rexUI
+            .add
+            .roundRectangle(0, 0, 0, 0, 0, 0xffffff),
+
+          panel: {
+            child: createPanel(this, data, '설문조사'),
+            mask: {
+              padding: 0
+            }
+          },
+
+          mouseWheelScroller: {
+            focus: false,
+            speed: 0.1
+          },
+
+          space: {
+            left: 10,
+            right: 10,
+            top: 10,
+            bottom: 70,
+            panel: 10
+          }
+        })
+        .layout()
+      surveyPanel.visible = false
+
+      circle.setStrokeStyle(2, 0x868686)
+
+      // 새로고침, 페이지 이동, 재접속 등 환경이 변경되었을때 bgm의 상태를 유지하기 위하여 localstorage에 상태를 저장
+      if (localStorage.getItem('bgm') == null) {
+        this.bgm = this
+          .sound
+          .play("title_music", {loop: true})
+        sound_off.visible = false
+        sound_on.visible = true
+        localStorage.setItem("bgm", 'true')
+      } else if (localStorage.getItem('bgm') == 'true') {
+        this.bgm = this
+          .sound
+          .play("title_music", {loop: true})
+        sound_off.visible = false
+        sound_on.visible = true
+      } else if (localStorage.getItem('bgm') == 'false') {
+        game.sound.mute = true
+        sound_off.visible = true
+        sound_on.visible = false
+      }
+
+      var button = this
+        .add
+        .image(window_width / 2, window_height * 0.8, 'confirm')
+        .setInteractive({cursor: 'pointer'})
+      button.visible = false
+
+      this.username = this
+        .add
+        .text(90, 53, name, {
+          color: 'black',
+          font: '550 23px Poppins'
+        })
+
+      // 각 UI 이벤트 할당
+      home.on('pointerdown', function (event) {
+        window.location.href = `/mainapp/main`
+      })
+
+      store.on('pointerdown', function (event) {
+        window.location.href = `/mainapp/store`
+      })
+
+      skills.on('pointerdown', function (event) {
+        window.location.href = `/mainapp/skills`
+      })
+
+      analysis.on('pointerdown', function (event) {
+        window.location.href = `/mainapp/analysis`
+      })
+
+      chr.on('pointerdown', function (event) {
+        window.location.href = `/mainapp/character`
+      })
+
+      start.on('pointerdown', function (event) {
+        window.location.href = `/mainapp/room`
+      })
+
+      survey.on('pointerdown', function (event) {
+        surveyPanel.visible = true
+        button.visible = true
+      })
+
+      button.on('pointerdown', function (event) {
+        surveyPanel.visible = false
+        button.visible = false
+      })
+
+      banner.on('pointerdown', function (event) {
+        window.location.href = `https://rootree.co.kr`
+      })
+
+      sound_on.on('pointerdown', function (event) {
+        game.sound.mute = true
+        sound_on.visible = false
+        sound_off.visible = true
+        localStorage.setItem("bgm", 'false')
+      })
+      sound_off.on('pointerdown', function (event) {
+        game.sound.mute = false
+        sound_on.visible = true
+        sound_off.visible = false
+        localStorage.setItem("bgm", 'true')
+      })
+
+      exit.on('pointerdown', function (event) {
+        window.location.href = `/accounts/logout`
+      })
+
+      surveyPanel
+        .setChildrenInteractive({
+          targets: [surveyPanel.getByName('설문조사', true)]
+        })
+        .on('child.click', function (child) {
+          child.alpha = 1
+          child
+            .children[0]
+            .fillColor = 0xa1eaff //클릭시 label색상 변경
+        })
+
+      this
+        .input
+        .setTopOnly(true)
+    }
+
+    function update() {}
+
+    var FitTo = function (child, parent, out) {
+      if (out === undefined) {
+        out = {};
+      } else if (out === true) {
+        out = globalSize;
+      }
+
+      if ((child.width <= parent.width) && (child.height <= parent.height)) {
+        out.width = child.width;
+        out.height = child.height;
+        return out;
+      }
+
+      var childRatio = child.width / child.height;
+      out.width = Math.min(child.width, parent.width);
+      out.height = Math.min(child.height, parent.height);
+      var ratio = out.width / out.height;
+
+      if (ratio < childRatio) {
+        out.height = out.width / childRatio;
+      } else if (ratio > childRatio) {
+        out.width = out.height * childRatio;
+      }
+
+      return out;
+    }
+
+    var globalSize = {};
+
+    let config = {
+      type: Phaser.AUTO,
+      width: window_width,
+      height: window_height,
+      backgroundColor: '#ffffff',
+      scene: {
+        preload: preload,
+        create: create,
+        update: update
+      },
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+      },
+      pixelArt: true,
+      render: {
+        antialias: true
+      }
+    }
+    let game = new Phaser.Game(config)
+  </script>
+{% endblock script %}

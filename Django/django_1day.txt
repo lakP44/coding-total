@@ -1,0 +1,137 @@
+1. "mysite2" 이름을 가진 장고 프로젝트를 생성하시오  
+c:\dev>django-admin startproject mysite2
+
+2. mysite2에 myapp을 생성하세요
+c:\dev\mysite2>python manage.py startapp myapp
+
+3. myapp  앱을  mysite2 프로젝트에 등록하세요
+   프로젝트/mysite2/settings.py/INSTALLED_APPS= [ 'myapp' ]
+
+4. myapp에서 사용할 urls.py를 생성하세요.
+
+5. "~:8000/myapp/하위경로" 요청시 하위경로는 myapp의 urls.py에서 검색하도록 설정 ==> 
+     루트 URL 설정파일에
+     ==> settings 모듈의 ROOT_URLCONF = 'mysite2.urls'
+6. "localhost:8000/myapp/a/" 요청시 "hello!"라고 응답하는 view를 작성하세요.  
+7. mysite2 를 서비스하는 장고에서 지원하는 웹서버를 시작시키세요.
+커맨드창
+cd c:\dev\mysite2
+python manage.py runserver
+
+http://127.0.0.1:8000/myapp/a/
+
+8. 현재 mysite2 프로젝트가 사용하는 환경설정 파일이 무엇인지 확인해보세요
+    manage.py => DJANGO_SETTINGS_MODULE ='mysite2.settings'
+9. 현재 mysite2 프로젝트에서 사용하는 DB서버가 무엇인지 확인해보세요.
+    mysite2.settings의 DATABASES 
+10. 모델 클래스 선언
+     모델 클래스 이름 : Contact
+     필드(컬럼)
+     name 가변길이 50
+     tel     가변결이 20
+
+11. DB에 모델클래스 적용(Table 생성)
+     1) 마이그레이션 파일 생성
+         mysite2>python manage.py makemigrations myapp
+     2) DB에 반영
+         mysite2>python manage.py migrate myapp
+
+12. DB 확인
+     DBBrowser에서 mysite2의 db.sqlite3 파일 열기후 확인
+
+13. 장고쉘
+    mysite2>python manage.py shell
+14. 모델 인스턴스 생성
+     참조변수 = 모델명()
+     참조변수 = 모델명(필드=값, 필드=값)
+15. 모델 인스턴스 DB에 저장
+     참조변수.save()
+     >>> from myapp.models import Contact
+
+     >>> c1 = Contact()
+     >>> c1.name = "홍길동"
+     >>> c1.tel = "010-123-456"
+     >>> c1.save()
+
+     >>> c2 = Contact(name="이순신", tel="010-678-555")
+     >>> c2.save()
+     >>> print(c1)
+            "홍길동"
+    >>> print(c2)
+           "이순신"
+
+   myapp2.models
+   class Contact(models.Mode):
+         ....
+         def __str__(self):
+               return self.name  
+
+16. 기본키 필드를 조건으로 select 작업을 하려고 합니다.
+     SQL>select * from myapp_contact where id=1
+     위 코드와 동일한 장고 ORM 명령문은?
+     모델명.objects.get(기본키필드명=값)
+    >>> Contact.objects.get(id=1)
+    >>> c = Contact.objects.get(id=1)
+    >>> print(c)
+
+17. Contact 인스턴스 c의 이름을 "고길동"으로 변경합니다.
+     모델 인스턴스 수정 방법
+     1) 수정하려는 모델인스턴스를 추출
+     2) 필드 수정
+     3) save() 호출
+     >>> c.name = "고길동"
+     >>> c.save()
+
+18. select * from myapp_contact   SQL 문과 동일한 장고 ORM 명령문 실행하세요
+     모델명.objects.all()
+    >>> Contact.objects.all()
+
+19. 웹브라우저에 
+    http://localhost:8000/myapp/contact/1/      요청이 들어오면  화면에 "고길동" 출력
+    http://localhost:8000/myapp/contact/2/      요청이 들어오면  화면에 "이순신" 출력
+
+20.  모델명.objects.get(기본키필드명=값) 과  try-except가 조합된 함수 
+      get_object_or_404(모델명,기본키필드명=값)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+ 

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="">
+    <head>
+        <meta charset="utf-8">
+        <title>05-07</title>
+        <script type="text/javascript">
+            var data1 = [ 10,20,30,40,50,60,70,80 ];
+            var data2 = {
+                class : "3-3",
+                subject : "korean",
+                scores : [
+                    { name : "설현", score : 90 },
+                    { name : "혜리", score : 80 },
+                    { name : "채빈", score : 100 },
+                    { name : "설리", score : 90 },
+                    { name : "루나", score : 70 },
+                    { name : "나나", score : 50 },
+                    { name : "하니", score : 60 }
+                ]
+            }; 
+            var condition= { min : 70, max : 90 };
+            
+            var result2 = data2.scores.filter(function(val, index){
+                if(val.score >= 80){
+                    return true;
+                }
+            })
+        </script>
+    </head>
+    <body>
+        
+    </body>
+</html>

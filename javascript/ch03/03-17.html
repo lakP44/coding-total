@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="">
+   <head>
+      <meta charset="utf-8">
+      <title>03-17</title>
+      <script type="text/javascript">
+         function outer(x) {
+            function inner(y) {
+              return x+y;
+            }
+            return inner;
+          }
+          window.a = outer(4);
+          var result = a(5);
+          console.log(result);
+      </script>
+   </head>
+   <body>
+
+   </body>
+</html>

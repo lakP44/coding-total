@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block script %}
+<script src={% static 'js/window.js' %}></script>
+<script src="https://apis.google.com/js/api.js"></script>
+
+<script>
+    
+
+    /**
+     * Sample JavaScript code for youtube.channels.list
+     * See instructions for running APIs Explorer code samples locally:
+     * https://developers.google.com/explorer-help/code-samples#javascript
+     */
+  
+    function authenticate() {
+      return gapi.auth2.getAuthInstance()
+          .signIn({scope: "https://www.googleapis.com/auth/youtube"})
+          .then(function() { console.log("Sign-in successful"); },
+                function(err) { console.error("Error signing in", err); });
+    }
+    function loadClient() {
+      gapi.client.setApiKey("AIzaSyDY6FZd_XJBe4mepNMx19U7EB3wG6206HM");
+      return gapi.client.load("https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest")
+          .then(function() { console.log("GAPI client loaded for API"); },
+                function(err) { console.error("Error loading GAPI client for API", err); });
+    }
+    // Make sure the client is loaded and sign-in is complete before calling this method.
+    function execute(video_reader) {
+     
+  
+      return gapi.client.request({
+        "path": "https://www.googleapis.com/upload/youtube/v3/videos",
+        "method": "POST",
+        "params": {
+          "part": [
+            "snippet,contentDetails"
+          ],
+        },
+        "headers": {
+            'contentType': 'video/mp4'
+        },
+        "body": video_reader
+      })
+          .then(function(response) {
+                  // Handle the results here (response.result has the parsed body).
+                  console.log("Response", response);
+                },
+                function(err) { console.error("Execute error", err); });
+    }
+    
+    gapi.load("client:auth2", function() {
+      gapi.auth2.init({
+            client_id: "129129283051-rrs1ojhj6582k8lkd1pmdgp9b5idt0rl.apps.googleusercontent.com",
+            plugin_name: 'hello' // 있어야 popup_close 에러 안 납니다
+        });
+    });
+</script>
+
+<script>
+
+'use strict'
+
+const COLOR_LIGHT = 0x6b5ce0;
+
+class Demo extends Phaser.Scene {
+    constructor() {
+        super({
+            key: 'examples'
+        })
+    }
+
+    preload() {
+      this.load.scenePlugin({
+        key: 'rexuiplugin',
+        url: 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexuiplugin.min.js',
+        sceneKey: 'rexUI'
+      }); 
+        this.load.plugin('rextransitionimageplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rextransitionimageplugin.min.js', true);      
+        this.load.image('classroom', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/assets/images/backgrounds/classroom.png');
+        this.load.image('road', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/assets/images/backgrounds/road.png');
+        this.load.image('youtube', "{% static 'icons/youtube.png' %}")
+        this.load.image('instagram', "{% static 'icons/instagram.png' %}")
+        this.load.image('tiktok', "{% static 'icons/tiktok.png' %}")
+    }
+
+    create() {
+        let _game = this.sys.game
+
+        var image = this.add.rexTransitionImage(window_width / 2, window_height / 2, 'classroom')
+            .setScale(0.4)
+            .on('complete', function () {
+                console.log('complete')
+            })
+
+        this.input.on('pointerdown', function () {
+            var currentKey = image.texture.key;
+            if (currentKey === 'classroom') {
+                SlideOutRight(image, 'road');
+            } else {
+                SlideInLeft(image, 'classroom');
+            }
+
+        })
+
+        this.add.text(0, 580, 'Click to start transition')
+
+
+
+        var expand = true;
+        var buttons = this.rexUI.add.buttons({
+            x: window_width/2, y: 510,
+            width: 400,
+            orientation: 'x',
+
+
+            buttons: [
+                createButton(this, 'youtube'),
+                createButton(this, 'instagram'),
+                createButton(this, 'tiktok'),
+            ],
+
+            space: {
+                left: 20, right: 20, top: 10, bottom: 10, 
+                item: 3
+            },
+            expand: expand
+        })
+        .layout()
+
+        buttons
+            .on('button.click', function (button, index, pointer, event) {
+                console.log(`Click button-${button.text}`);
+                if (button.text == 'youtube') {
+                    _game.renderer.snapshot(async function(image) {
+                        
+                        
+                        var reader = new FileReader();
+                        reader.onload = function(e) {
+                            // binary data
+                            console.log(e.target.result);
+                        };
+                        blob = new Blob('{% static 'test.mp4' %}');
+                        console.log(blob)
+                        await authenticate();
+               
+                    });
+                    return;
+                } else if (button.text == 'instagram') {
+
+                } else {
+                    _game.renderer.snapshot(async function(image) {
+                        // base64로 인코딩된 imageUrl을 파일로 변경
+                        const file = await fetch(image.src)
+                            .then(r => r.blob())
+                            .then(blobFile => new File([blobFile], "share", { type: "image/png" }))
+                        console.log(file)
+                    })
+                }
+            })
+    }
+
+    update() { }
+}
+
+var SlideOutRight = function (transitionImage, key, frame) {
+    transitionImage.transit({
+        key: key, frame: frame,
+
+        duration: 1000, ease: 'Linear', dir: 'out', mask: true,
+
+        onStart: function (parent, currentImage, nextImage, t) {
+        },
+        onProgress: function (parent, currentImage, nextImage, t) {
+            var x = currentImage.width * (t);
+            parent.setChildLocalPosition(currentImage, x, 0);
+        },
+        onComplete: function (parent, currentImage, nextImage, t) {
+            parent.setChildLocalPosition(currentImage, 0, 0);
+        },
+    })
+    return transitionImage;
+}
+
+var SlideInLeft = function (transitionImage, key, frame) {
+    transitionImage.transit({
+        key: key, frame: frame,
+
+        duration: 1000, ease: 'Cubic', dir: 'in', mask: true,
+
+        onStart: function (parent, currentImage, nextImage, t) {
+        },
+        onProgress: function (parent, currentImage, nextImage, t) {
+            var x = nextImage.width * (1 - t);
+            parent.setChildLocalPosition(nextImage, -x, 0);
+        },
+        onComplete: function (parent, currentImage, nextImage, t) {
+            parent.setChildLocalPosition(nextImage, 0, 0);
+        },
+    })
+    return transitionImage;
+}
+
+var createButton = function (scene, key) {
+  return scene.rexUI.add.label({
+      background: scene.rexUI.add.roundRectangle(0, 0, 0, 0, 50, COLOR_LIGHT, 0.8),
+      text: scene.add.text(0, 0, key, {
+          fontSize: 18,
+          fontFamily: 'Arial'
+      }),
+      space: {
+          left: 10,
+          right: 10,
+      },
+      icon: scene.add.image(0, 0, key),
+      iconSize: 40,
+      align: 'center'
+  });
+}
+
+var config = {
+    type: Phaser.AUTO,
+    width: window_width,
+    height: window_height,
+    scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+    },
+    scene: Demo
+};
+
+var game = new Phaser.Game(config);
+
+  
+</script>
+
+{% endblock script %}

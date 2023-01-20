@@ -1,0 +1,103 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <title>얼굴 게임</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- style.css -->
+    <link rel="stylesheet" href="{% static "style.css" %}" type="text/css" />
+    <!-- lib/cute-alert (css) -->
+    <link rel="stylesheet" href="{% static 'libs/cute-alert/style.css' %}" type="text/css" />
+    <!-- Font Awesome -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- MDB -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.0.1/mdb.min.css"
+      rel="stylesheet"
+    />
+    <!-- MDB -->
+    <script
+      type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.0.1/mdb.min.js"
+    ></script>
+
+    <!-- Phaser -->
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
+   
+
+    <style>
+      .custom-mb {
+        margin-top: 2rem;
+      }
+      .form-outline {
+        border-bottom: 1px solid; !important
+      }
+      .fa-kakao {
+        color: #000000;
+      }
+      .fa-naver {
+        font-family: Arial;
+        font-weight: bold;
+        font-size: 14px;
+        color: #fff;
+      }
+      .fa-naver:before {
+        content: 'N';
+      }
+      .auth-btn {
+        border-radius: 30% 5%;
+        width: 10rem;
+      }
+      #join-a {
+        color: white;
+      }
+      .errorlist {
+        color: red;
+        border: 1px solid;
+        padding-left: 0;
+        padding: 1rem;
+        border-radius: 1rem;
+      }
+    </style>
+    {% block style %} 
+    
+    {% endblock %}
+    {% block extra_head %} {% endblock %}
+  </head>
+  <body>
+    {% block body %}
+    
+    {% block content %} {% endblock %} 
+    {% block script %} {% endblock%}
+
+    {% endblock %}
+    {% block extra_body %} {% endblock %}
+
+    {% comment %} 로그인 관련 메시지 있으면 TOAST {% endcomment %}
+    {% if messages %}
+    <script>
+      window.onload = function() {
+        {% for message in messages %}
+          cuteToast({
+            type: "info",
+            title: "안내드립니다",
+            message: "{{message}}",
+          });
+        {% endfor %}
+      }
+    </script>
+    {% endif %}
+    <!-- lib/cute-alert (js) -->
+    <script src="{% static "libs/cute-alert/cute-alert.js" %}"></script>
+    
+  </body>
+</html>

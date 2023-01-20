@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block style %}
+<style>
+  a {
+    color: inherit !important;
+    text-decoration: none;
+  }
+</style>
+{% endblock style %}
+
+
+
+{% block content %}
+<div class="container">
+
+  {% include 'core/components/back-button.html' %}
+
+  <div class="my-3 fs-1 text-center fw-bold">
+    <p>피부 맞춤 제품 추천</p>
+  </div>
+
+  <!-- 얼굴 이미지 -->
+  <div class="d-flex justify-content-center row">
+    <div class="img-wrapper w-50">
+      <img src={% static 'images/face.png' %} alt="face" class="img-fluid">
+    </div>
+  </div>
+
+  <!-- 얼굴 분석 문구 -->
+  <div class="text-center fw-bold">
+    <p class="fs-3">눈가에 주름이 많으세요</p>
+  </div>
+
+  <!-- 제품 추천 -->
+  <div class="mt-5">
+    <div class="fw-bold">아래의 제품들을 추천드려요</div>
+
+    <ul class="list-group list-group-light">
+      {% for product in products  %}
+      <li class="list-group-item list-group-item-warning list-group-item-action d-flex justify-content-between align-items-center hover-overlay px-2">
+        <a href="{{product.url}}">
+        <div class="d-flex align-items-center">
+          <img src="{{product.image}}" alt="product-image" style="width: 45px; height: 45px"
+            class="rounded-circle" />
+          <div class="ms-3">
+            <p class="fw-bold mb-1">{{product.name}}</p>
+            <p class="text-muted mb-0">{{product.brand.name}}</p>
+          </div>
+        </div>
+        </a>
+        <span class="badge rounded-pill badge-success">{{product.effect}}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock content %}
+

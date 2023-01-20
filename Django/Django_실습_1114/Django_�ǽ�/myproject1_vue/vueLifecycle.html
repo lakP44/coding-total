@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Vue LifeCycle</title>
+  <script src="https://unpkg.com/vue@next"></script>
+</head>
+<body>
+
+  <div id="simple">
+    메시지: <span v-html="message"></span><br>
+    글자수: <span v-html="count"></span><br>
+    <button type="button" @click="getData">메시지 읽기</button><br>
+    <button type="button" @click="setData">메시지 변경</button><br>
+    <button type="button" @click="unmountVue">Vue 삭제</button><br>
+  </div>
+  
+  
+  <script type="text/javascript">
+
+    var TestApp = {
+      data(){
+        console.log("data()")
+        return{
+          message : "You may be disappointed if you fail, but you are doomed if you don't try.",
+        }
+      },
+      computed:{
+        count : function(){
+            console.log("computed")
+            return this.message.length
+          }
+      },
+      watch: {
+        message: function(){
+            console.log('message 값 변경되어 watch() 호출됨!');
+        }
+      },
+
+      methods:{
+        getData(){
+          alert(this.message)
+        },
+        setData(){
+          this.message = "Happiness makes up in height for what it lacks in length."
+        },
+        unmountVue(){
+          alert('Vue 인스턴스를 삭제합니다.')
+          this.$.appContext.app.unmount();
+        }
+      },
+
+      beforeCreate(){
+        console.log("===> beforeCreate() 호출됨!")
+        console.log('message :', this.message)
+        console.log('count :',this.count)
+      },
+
+      created(){
+        console.log("===> created() 호출됨!")
+        console.log('message :', this.message)
+        console.log('count :',this.count)
+      },
+
+      beforeMount(){
+        alert("beforeMount()")
+        console.log("===> beforeMount() 호출됨!")
+      },
+
+      mounted(){
+        alert("mounted()")
+        console.log("===> mounted() 호출됨!")
+      },
+
+      beforeUpdate(){
+        console.log("===> beforeUpdate() 호출됨!")
+      },
+
+      updated(){
+        console.log("===> updated() 호출됨!")
+      },
+
+      beforeUnmount(){
+       console.log("===> beforeUnmount() 호출됨!")
+      },
+
+      unmounted(){
+        console.log("===> unmounted() 호출됨!")
+      }
+
+     } 
+    
+    const app = Vue.createApp(TestApp).mount('#simple')
+  </script>
+</body>
+</html>

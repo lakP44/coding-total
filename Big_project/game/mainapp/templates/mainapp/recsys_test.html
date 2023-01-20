@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{%load static%}
+{% block script %}
+<script src={% static 'js/window.js' %}></script>
+
+<head>
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+    <py-config>
+        packages = ['numpy', 'pandas', 'scikit-learn']
+    </py-config>
+</head>
+<body>
+    <py-script> 
+        import numpy as np
+        import pandas as pd
+        from sklearn.model_selection import train_test_split
+        from sklearn.tree import DecisionTreeClassifier
+
+        # columns
+        columns = ['상품명', '가격', '사용시간', '각질케어', '노폐물제거', '레포츠용', '메이크업베이스겸용', '모공케어',
+        '밀착력', '부드러운발림', '브라이트닝', '블랙헤드케어', '상쾌함', '안티에이징', '알콜프리', '약산성',
+        '어린이겸용', '영양공급', '오일프리', '유수분밸런스조절', '윤기부여', '저자극', '주름케어', '지속력',
+        '초미세먼지세정', '촉촉함(수분공급)', '쿨링감', '트러블케어', '피부강화', '피부결정돈', '피부보호', '피부유연',
+        '피부진정', '피부탄력', '피부톤보정', '피부투명', '피지조절', '피지케어', '향', '화이트닝', '화이트헤드케어',
+        '흡수력', '건성', '모든피부용', '민감성', '복합', '중건성', '지복합', '지성', 'T존', 'U존', '넥',
+        '바디용', '스팟', '아이용', '코', '팔자주름', '페이스용', '핸드용', '가루형', '거품형', '로션형',
+        '리필형', '무스형', '밤형', '버터형', '스크럽형', '시트형', '압축/팩트형', '액상형', '오일형', '젤형',
+        '캡슐/정', '쿠션형', '크림형', '패치형']
+
+        # 상품 목록
+        df_url = pd.read_csv("naver_url.csv")
+        df_url = df_url[['상품명', 'url']]
+
+        # user data
+        user = ['노폐물제거', '모든피부용', '페이스용', '스크럽형']
+
+        # test data
+        test_df = pd.DataFrame(columns=columns)
+        test_df = test_df.iloc[:, 1:]
+        test_df.loc[0, :] = [0] * (len(columns) - 1)
+
+        for u in user:
+            tmp = u
+            print(tmp)
+            test_df[tmp] += 1
+
+        #pred = model.predict(test_df)
+        #df_url['url'][df_url['상품명'] == pred[0]]
+
+    </py-script>
+</body>
+
+{% endblock script %}

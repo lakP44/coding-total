@@ -1,0 +1,7 @@
+.cache
+game/**/__pycache__
+**/migrations
+**/migrations
+**/.cache
+test.js
+*_secrets.json

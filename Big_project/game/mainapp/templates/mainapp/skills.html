@@ -1,0 +1,379 @@
+{% extends "base.html" %}
+{%load static%}
+{% block script %}
+  <script src={% static 'js/window.js' %}></script>
+  <script>
+    var Wcount = 1
+
+    function preload() {
+      this
+        .load
+        .scenePlugin({key: 'rexuiplugin', url: 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexuiplugin.min.js', sceneKey: 'rexUI'})
+
+      this
+        .load
+        .image('mainline', "{% static '/resource/ui/main/mainline.png'%}")
+      this
+        .load
+        .image('home', "{% static '/resource/ui/main/home.png'%}")
+      this
+        .load
+        .image('store', "{% static '/resource/ui/main/store.png'%}")
+      this
+        .load
+        .image('analysis', "{% static '/resource/ui/main/analysis.png'%}")
+      this
+        .load
+        .image('logout', "{% static '/resource/ui/main/logout.png'%}")
+
+      //skills
+      this
+        .load
+        .image('skill1', "{% static '/resource/ui/skills/skills/skill1.png'%}")
+      this
+        .load
+        .image('skill2', "{% static '/resource/ui/skills/skills/skill2.png'%}")
+      this
+        .load
+        .image('skill3', "{% static '/resource/ui/skills/skills/skill3.png'%}")
+      this
+        .load
+        .image('skill4', "{% static '/resource/ui/skills/skills/skill4.png'%}")
+      this
+        .load
+        .image('skill5', "{% static '/resource/ui/skills/skills/skill5.png'%}")
+      this
+        .load
+        .image('skill6', "{% static '/resource/ui/skills/skills/skill6.png'%}")
+      this
+        .load
+        .image('text', "{% static '/resource/ui/skills/ui/text.png'%}")
+      this
+        .load
+        .image('layout', "{% static '/resource/ui/skills/ui/layout.png'%}")
+      this
+        .load
+        .image('confirm', "{% static '/resource/ui/skills/ui/button.png'%}")
+
+      //ui
+
+    }
+
+    function create() {
+
+      //ui
+      var text = this
+        .add
+        .image(110, 50, 'text')
+
+      this
+        .add
+        .image(window_width / 2, window_height + 30, 'mainline')
+
+      var background = this
+        .add
+        .image(window_width / 2, 220, 'background')
+        .setScale(0.4)
+
+      var home = this
+        .add
+        .image(window_width * 0.17, window_height - 36, 'home')
+        .setInteractive({cursor: 'pointer'})
+
+      var analysis = this
+        .add
+        .image(window_width * 0.4, window_height - 36, 'analysis')
+        .setInteractive({cursor: 'pointer'})
+
+      var store = this
+        .add
+        .image(window_width * 0.63, window_height - 37, 'store')
+        .setInteractive({cursor: 'pointer'})
+
+      var exit = this
+        .add
+        .image(window_width * 0.85, window_height - 36, 'logout')
+        .setInteractive({cursor: 'pointer'})
+
+      this
+        .add
+        .image(window_width / 2, window_height * 0.45, 'layout')
+
+      //skills
+      skill1 = this
+        .add
+        .image(window_width * 0.24, window_height * 0.292, 'skill1')
+        .setScale(0.9)
+        .setInteractive()
+      skill2 = this
+        .add
+        .image(window_width * 0.5, window_height * 0.292, 'skill2')
+        .setScale(0.9)
+        .setInteractive()
+      skill3 = this
+        .add
+        .image(window_width * 0.754, window_height * 0.29, 'skill3')
+        .setScale(0.9)
+        .setInteractive()
+      skill4 = this
+        .add
+        .image(window_width * 0.24, window_height * 0.495, 'skill4')
+        .setScale(0.85)
+        .setInteractive()
+      skill5 = this
+        .add
+        .image(window_width * 0.498, window_height * 0.491, 'skill5')
+        .setScale(0.9)
+        .setInteractive()
+      skill6 = this
+        .add
+        .image(window_width * 0.754, window_height * 0.491, 'skill6')
+        .setScale(0.9)
+        .setInteractive()
+      s = [
+        skill1,
+        skill2,
+        skill3,
+        skill4,
+        skill5,
+        skill6
+      ];
+
+      confirm = this
+        .add
+        .image(window_width * 0.8, window_height * 0.83, 'confirm')
+        .setScale(0.4)
+        .setInteractive()
+
+      var b1 = this
+        .add
+        .circle(91, window_height * 0.731, 40, 0xffffff)
+      var s1 = this
+        .add
+        .image(91, window_height * 0.731, 'skill1')
+
+      var b2 = this
+        .add
+        .circle(187, window_height * 0.731, 40, 0xffffff)
+      var s2 = this
+        .add
+        .image(187, window_height * 0.731, 'skill1')
+
+      var b3 = this
+        .add
+        .circle(285, window_height * 0.731, 40, 0xffffff)
+      var s3 = this
+        .add
+        .image(285, window_height * 0.731, 'skill1')
+
+      b1.visible = false
+      s1.visible = false
+      b2.visible = false
+      s2.visible = false
+      b3.visible = false
+      s3.visible = false
+
+      confirm.visible = false
+
+      skill_count = [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+
+      // true 세기
+      let count = 1;
+      for (let loop = 0; loop < skill_count.length; loop++) {
+        if (skill_count[loop] === true) {
+          count++;
+        }
+      };
+
+      this
+        .input
+        .on('gameobjectdown', function (pointer, gameObject) {
+          if (gameObject == skill1) {
+            if (Wcount == 1) {
+              s1.setTexture('skill1')
+              s1.visible = true
+              b1.visible = true
+              Wcount = 2
+            } else if (Wcount == 2) {
+              s2.setTexture('skill1')
+              s2.visible = true
+              b2.visible = true
+              Wcount = 3
+            } else if (Wcount == 3) {
+              s3.setTexture('skill1')
+              s3.visible = true
+              b3.visible = true
+              Wcount = 4
+            }
+            skill_count[0] = !skill_count[0];
+          }
+          if (gameObject == skill2) {
+            if (Wcount == 1) {
+              s1.setTexture('skill2')
+              s1.visible = true
+              b1.visible = true
+              Wcount = 2
+            } else if (Wcount == 2) {
+              s2.setTexture('skill2')
+              s2.visible = true
+              b2.visible = true
+              Wcount = 3
+            } else if (Wcount == 3) {
+              s3.setTexture('skill2')
+              s3.visible = true
+              b3.visible = true
+              Wcount = 4
+            }
+            skill_count[1] = !skill_count[1];
+          }
+          if (gameObject == skill3) {
+            if (Wcount == 1) {
+              s1.setTexture('skill3')
+              s1.visible = true
+              b1.visible = true
+              Wcount = 2
+            } else if (Wcount == 2) {
+              s2.setTexture('skill3')
+              s2.visible = true
+              b2.visible = true
+              Wcount = 3
+            } else if (Wcount == 3) {
+              s3.setTexture('skill3')
+              s3.visible = true
+              b3.visible = true
+              Wcount = 4
+            }
+            skill_count[2] = !skill_count[2];
+          }
+          if (gameObject == skill4) {
+            if (Wcount == 1) {
+              s1.setTexture('skill4')
+              s1.visible = true
+              b1.visible = true
+              Wcount = 2
+            } else if (Wcount == 2) {
+              s2.setTexture('skill4')
+              s2.visible = true
+              b2.visible = true
+              Wcount = 3
+            } else if (Wcount == 3) {
+              s3.setTexture('skill4')
+              s3.visible = true
+              b3.visible = true
+              Wcount = 4
+            }
+            skill_count[3] = !skill_count[3];
+          }
+          if (gameObject == skill5) {
+            if (Wcount == 1) {
+              s1.setTexture('skill5')
+              s1.visible = true
+              b1.visible = true
+              Wcount = 2
+            } else if (Wcount == 2) {
+              s2.setTexture('skill5')
+              s2.visible = true
+              b2.visible = true
+              Wcount = 3
+            } else if (Wcount == 3) {
+              s3.setTexture('skill5')
+              s3.visible = true
+              b3.visible = true
+              Wcount = 4
+            }
+            skill_count[4] = !skill_count[4];
+          }
+          if (gameObject == skill6) {
+            if (Wcount == 1) {
+              s1.setTexture('skill6')
+              s1.visible = true
+              b1.visible = true
+              Wcount = 2
+            } else if (Wcount == 2) {
+              s2.setTexture('skill6')
+              s2.visible = true
+              b2.visible = true
+              Wcount = 3
+            } else if (Wcount == 3) {
+              s3.setTexture('skill6')
+              s3.visible = true
+              b3.visible = true
+              Wcount = 4
+            }
+            skill_count[5] = !skill_count[5];
+          }
+
+          // 선택된 스킬 수 세기
+          let count = 0;
+          for (let loop = 0; loop < skill_count.length; loop++) {
+            if (skill_count[loop] === true) {
+              count++;
+            }
+          };
+
+          // 선택된 스킬의 수가 3개여야만 확정 버튼을 띄워준다
+          if (count == 3) {
+            confirm.visible = true
+            confirm.on('pointerover', function (event) {
+              this.setTint(0x50bcdf)
+            })
+            confirm.on('pointerout', function (event) {
+              this.clearTint()
+            })
+            confirm.on('pointerdown', function (event) {
+              window.location.href = `/mainapp/main`
+            })
+          } else {
+            confirm.visible = false
+          }
+
+        })
+
+      home.on('pointerdown', function (event) {
+        window.location.href = `/mainapp/main`
+      })
+
+      store.on('pointerdown', function (event) {
+        window.location.href = `/mainapp/store`
+      })
+
+      analysis.on('pointerdown', function (event) {
+        window.location.href = `/mainapp/analysis`
+      })
+
+      exit.on('pointerdown', function (event) {
+        window.location.href = `/accounts/logout`
+      })
+    }
+
+    function update() {}
+
+    let config = {
+      type: Phaser.AUTO,
+      width: window_width,
+      height: window_height,
+      backgroundColor: '#ffffff',
+      scene: {
+        preload: preload,
+        create: create,
+        update: update
+      },
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+      },
+      pixelArt: false,
+      render: {
+        antialias: true
+      }
+    }
+    let game = new Phaser.Game(config)
+  </script>
+{% endblock script %}

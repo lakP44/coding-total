@@ -1,0 +1,1214 @@
+{% extends "base.html" %}
+{%load static%}
+{% block script %}
+<script src={% static 'js/window.js' %}></script>
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script>
+    const COLOR_PRIMARY = 0xFFFFFF;
+    const COLOR_LIGHT = 0xDECFFA;
+    const COLOR_DARK = 0x260e04;
+
+    let itemData
+    let havingitemData
+    let wearingData
+    let userID
+    let itemID
+    let itemName
+
+    //아이템 데이터
+    let data = {
+        name: 'Rex',
+        helmet:[                
+        { name: '1helmet' },
+        { name: '2helmet' },
+        { name: '3helmet' },
+        { name: '4helmet' },
+        { name: '5helmet' },], 
+        hair:[
+        { name: '1hair' },
+        { name: '2hair' },
+        { name: '3hair' },
+        { name: '4hair' },
+        { name: '5hair' },], 
+        top:[
+        { name: '1top' },
+        { name: '2top' },
+        { name: '3top' },], 
+        bottom:[
+        { name: '1bottom' },
+        { name: '2bottom' },
+        { name: '3bottom' },
+        { name: '4bottom' },], 
+        shoe:[
+        { name: '1shoes' },
+        { name: '2shoes' },
+        { name: '3shoes' },
+        { name: '4shoes' },
+        { name: '5shoes' },], 
+        weapon:[
+        { name: '1weapon' },
+        { name: '2weapon' },
+        { name: '3weapon' },
+        { name: '4weapon' },
+        { name: '5weapon' },], 
+        shield:[
+        { name: '1shield' },
+        { name: '2shield' },
+        { name: '3shield' },
+        { name: '4shield' },
+        { name: '5shield' },] };
+
+    function getKeyByValue(obj, value) {
+        return Object.keys(obj).find(key => obj[key] === value);
+    }
+
+    //패널 만드는 함수 
+    var createPanel = function (scene, data, state) {
+        var sizer = scene.rexUI.add.sizer({
+            orientation: 'x',
+            space: { item: 10 }
+        })
+            .add(
+                createTable(scene, data, state, 1), // child
+                { expand: true }
+            ) 
+        return sizer;
+    }
+
+    var createTable = function (scene, data, key, rows) {
+        var capKey = key.charAt(0).toUpperCase() + key.slice(1);
+        var title = scene.rexUI.add.label({
+            orientation: 'x',
+        });
+    
+        var items = data[key];
+        var columns = Math.ceil(items.length / rows);
+        var table = scene.rexUI.add.gridSizer({
+            column: columns,
+            row: rows,
+    
+            rowProportions: 1,
+            space: { column: 10, row: 10 },
+            name: key  // Search this name to get table back
+        });
+    
+        var item, r, c;
+        var iconSize = 80;
+        for (var i = 0, cnt = items.length; i < cnt; i++) {
+            item = items[i];
+            r = i % columns;
+            c = (i - r) / columns;
+            table.add(
+                createIcon(scene, item, iconSize, iconSize),
+                r,
+                c,
+                'top',
+                0,
+                true
+            );
+        }
+    
+        return scene.rexUI.add.sizer({
+            orientation: 'y',
+            space: { left: 15, right: 10, top: 10, bottom: 10, item: 10 }
+        })
+            .addBackground(
+                scene.rexUI.add.roundRectangle(0, 0, 2, 2, 10, undefined).setStrokeStyle(4, COLOR_LIGHT, 1)
+            )
+            .add(
+                title, // child
+                0, // proportion
+                'left', // align
+                0, // paddingConfig
+                true // expand
+            )
+            .add(table, // child
+                1, // proportion
+                'center', // align
+                0, // paddingConfig
+                true // expand
+            );
+    }
+    
+    //패널 안에 들어갈 아이콘 만드는 함수
+    var createIcon = function (scene, item, iconWidth, iconHeight) {
+        var label = scene.rexUI.add.label({
+            orientation: 'y',
+            icon: scene.add.image(0, 0, item.name).setScale(0.5),
+            text: scene.add.text(0, 0, item.name, {color:'black'}),
+            space: { icon: 3 }
+        });
+    
+        return label;
+    };
+
+
+
+    async function preload ()
+    {
+        this.load.scenePlugin({
+            key: 'rexuiplugin',
+            url: 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexuiplugin.min.js',
+            sceneKey: 'rexUI'
+        });  
+
+
+        //이미지 불러오기
+        //bgs
+        this.load.image('bg', "{% static '/resource/ui//bg1.png'%}")
+
+        //player_head
+        this.load.image('hair', "{% static '/resource/ui/character/char/0HAIR.png'%}")
+        this.load.image('face', "{% static '/resource/ui/character/char/0HEAD EYES OPEN.png'%}")
+        this.load.image('helmet', "{% static '/resource/ui/character/char/3HELMET.png'%}")
+
+        //player_top
+        this.load.image('arm_a1', "{% static '/resource/ui/character/char/ARM A1.png'%}")
+        this.load.image('arm_a2', "{% static '/resource/ui/character/char/ARM A2.png'%}")
+        this.load.image('arm_a3', "{% static '/resource/ui/character/char/ARM A3.png'%}")
+        this.load.image('arm_b1', "{% static '/resource/ui/character/char/ARM B1.png'%}")
+        this.load.image('arm_b2', "{% static '/resource/ui/character/char/ARM B2.png'%}")
+        this.load.image('arm_b3b', "{% static '/resource/ui/character/char/ARM B3B.png'%}")
+        this.load.image('arm_b3f', "{% static '/resource/ui/character/char/ARM B3F.png'%}")
+        this.load.image('shoulder_a', "{% static '/resource/ui/character/char/SHOULDER A.png'%}")
+        this.load.image('shoulder_b', "{% static '/resource/ui/character/char/SHOULDER B.png'%}")
+        this.load.image('body', "{% static '/resource/ui/character/char/BODY.png'%}")
+        this.load.image('hip', "{% static '/resource/ui/character/char/HIP.png'%}")
+
+        //player_bottom
+        this.load.image('leg_a1', "{% static '/resource/ui/character/char/LEG A1.png'%}")
+        this.load.image('leg_a2', "{% static '/resource/ui/character/char/LEG A2.png'%}")
+        this.load.image('leg_b1', "{% static '/resource/ui/character/char/LEG B1.png'%}")
+        this.load.image('leg_b2', "{% static '/resource/ui/character/char/LEG B2.png'%}")
+
+        //player_shoes
+        this.load.image('leg_a3', "{% static '/resource/ui/character/char/LEG A3.png'%}")
+        this.load.image('leg_b3', "{% static '/resource/ui/character/char/LEG B3.png'%}")
+
+        //player_weapon
+        this.load.image('weapon', "{% static '/resource/ui/character/char/WEAPON.png'%}")
+
+
+        //player_shield
+        this.load.image('shield', "{% static '/resource/ui/character/char/SHIELD.png'%}")
+
+        //helmets
+        this.load.image('helmet1', "{% static '/resource/ui/character/char/3helmet.png'%}")
+        this.load.image('helmet2', "{% static '/resource/ui/character/char/5helmet.png'%}")
+        this.load.image('helmet3', "{% static '/resource/ui/character/char/7helmet.png'%}")
+        this.load.image('helmet4', "{% static '/resource/ui/character/char/9helmet.png'%}")
+        this.load.image('helmet5', "{% static '/resource/ui/character/char/10helmet.png'%}")
+
+
+        //hairs
+        this.load.image('hair1', "{% static '/resource/ui/character/char/1HAIR.png'%}")
+        this.load.image('hair2', "{% static '/resource/ui/character/char/3HAIR.png'%}")
+        this.load.image('hair3', "{% static '/resource/ui/character/char/8HAIR.png'%}")
+        this.load.image('hair4', "{% static '/resource/ui/character/char/9HAIR.png'%}")
+        this.load.image('hair5', "{% static '/resource/ui/character/char/11HAIR.png'%}")
+
+        //tops
+        this.load.image('arm_a11', "{% static '/resource/ui/character/char/1ARM A1.png'%}")
+        this.load.image('arm_a21', "{% static '/resource/ui/character/char/1ARM A2.png'%}")
+        this.load.image('arm_a31', "{% static '/resource/ui/character/char/1ARM A3.png'%}")
+        this.load.image('arm_b11', "{% static '/resource/ui/character/char/1ARM B1.png'%}")
+        this.load.image('arm_b21', "{% static '/resource/ui/character/char/1ARM B2.png'%}")
+        this.load.image('arm_b3b1', "{% static '/resource/ui/character/char/1ARM B3B.png'%}")
+        this.load.image('arm_b3f1', "{% static '/resource/ui/character/char/1ARM B3F.png'%}")
+        this.load.image('shoulder_a1', "{% static '/resource/ui/character/char/1SHOULDER A.png'%}")
+        this.load.image('shoulder_b1', "{% static '/resource/ui/character/char/1SHOULDER B.png'%}")
+        this.load.image('body1', "{% static '/resource/ui/character/char/1BODY.png'%}")
+        this.load.image('hip1', "{% static '/resource/ui/character/char/1HIP.png'%}")
+
+        this.load.image('arm_a12', "{% static '/resource/ui/character/char/2ARM A1.png'%}")
+        this.load.image('arm_a22', "{% static '/resource/ui/character/char/2ARM A2.png'%}")
+        this.load.image('arm_a32', "{% static '/resource/ui/character/char/2ARM A3.png'%}")
+        this.load.image('arm_b12', "{% static '/resource/ui/character/char/2ARM B1.png'%}")
+        this.load.image('arm_b22', "{% static '/resource/ui/character/char/2ARM B2.png'%}")
+        this.load.image('arm_b3b2', "{% static '/resource/ui/character/char/2ARM B3B.png'%}")
+        this.load.image('arm_b3f2', "{% static '/resource/ui/character/char/2ARM B3F.png'%}")
+        this.load.image('shoulder_a2', "{% static '/resource/ui/character/char/2SHOULDER A.png'%}")
+        this.load.image('shoulder_b2', "{% static '/resource/ui/character/char/2SHOULDER B.png'%}")
+        this.load.image('body2', "{% static '/resource/ui/character/char/2BODY.png'%}")
+        this.load.image('hip2', "{% static '/resource/ui/character/char/2HIP.png'%}")
+
+        this.load.image('arm_a13', "{% static '/resource/ui/character/char/3ARM A1.png'%}")
+        this.load.image('arm_a23', "{% static '/resource/ui/character/char/3ARM A2.png'%}")
+        this.load.image('arm_a33', "{% static '/resource/ui/character/char/3ARM A3.png'%}")
+        this.load.image('arm_b13', "{% static '/resource/ui/character/char/3ARM B1.png'%}")
+        this.load.image('arm_b23', "{% static '/resource/ui/character/char/3ARM B2.png'%}")
+        this.load.image('arm_b3b3', "{% static '/resource/ui/character/char/3ARM B3B.png'%}")
+        this.load.image('arm_b3f3', "{% static '/resource/ui/character/char/3ARM B3F.png'%}")
+        this.load.image('shoulder_a3', "{% static '/resource/ui/character/char/3SHOULDER A.png'%}")
+        this.load.image('shoulder_b3', "{% static '/resource/ui/character/char/3SHOULDER B.png'%}")
+        this.load.image('body3', "{% static '/resource/ui/character/char/3BODY.png'%}")
+        this.load.image('hip3', "{% static '/resource/ui/character/char/3HIP.png'%}")
+
+        //bottoms
+        this.load.image('leg_a11', "{% static '/resource/ui/character/char/1LEG A1.png'%}")
+        this.load.image('leg_a21', "{% static '/resource/ui/character/char/1LEG A2.png'%}")
+        this.load.image('leg_b11', "{% static '/resource/ui/character/char/1LEG B1.png'%}")
+        this.load.image('leg_b21', "{% static '/resource/ui/character/char/1LEG B2.png'%}")
+
+        this.load.image('leg_a12', "{% static '/resource/ui/character/char/2LEG A1.png'%}")
+        this.load.image('leg_a22', "{% static '/resource/ui/character/char/2LEG A2.png'%}")
+        this.load.image('leg_b12', "{% static '/resource/ui/character/char/2LEG A1.png'%}")
+        this.load.image('leg_b22', "{% static '/resource/ui/character/char/2LEG B2.png'%}")
+
+        this.load.image('leg_a13', "{% static '/resource/ui/character/char/3LEG A1.png'%}")
+        this.load.image('leg_a23', "{% static '/resource/ui/character/char/3LEG A2.png'%}")
+        this.load.image('leg_b13', "{% static '/resource/ui/character/char/3LEG B1.png'%}")
+        this.load.image('leg_b23', "{% static '/resource/ui/character/char/3LEG B2.png'%}")
+
+        this.load.image('leg_a14', "{% static '/resource/ui/character/char/4LEG A1.png'%}")
+        this.load.image('leg_a24', "{% static '/resource/ui/character/char/4LEG A2.png'%}")
+        this.load.image('leg_b14', "{% static '/resource/ui/character/char/4LEG B1.png'%}")
+        this.load.image('leg_b24', "{% static '/resource/ui/character/char/4LEG B2.png'%}")
+
+        //shoes
+        this.load.image('leg_a31', "{% static '/resource/ui/character/char/1LEG A3.png'%}")
+        this.load.image('leg_b31', "{% static '/resource/ui/character/char/1LEG B3.png'%}")
+
+        this.load.image('leg_a32', "{% static '/resource/ui/character/char/2LEG A3.png'%}")
+        this.load.image('leg_b32', "{% static '/resource/ui/character/char/2LEG B3.png'%}")
+
+        this.load.image('leg_a33', "{% static '/resource/ui/character/char/3LEG A3.png'%}")
+        this.load.image('leg_b33', "{% static '/resource/ui/character/char/3LEG B3.png'%}")
+
+        this.load.image('leg_a34', "{% static '/resource/ui/character/char/4LEG A3.png'%}")
+        this.load.image('leg_b34', "{% static '/resource/ui/character/char/4LEG B3.png'%}")
+
+        this.load.image('leg_a35', "{% static '/resource/ui/character/char/5LEG A3.png'%}")
+        this.load.image('leg_b35', "{% static '/resource/ui/character/char/5LEG B3.png'%}")
+
+        //weapons
+        this.load.image('weapon1', "{% static '/resource/ui/character/char/3WEAPON.png'%}")
+        this.load.image('weapon2', "{% static '/resource/ui/character/char/5WEAPON.png'%}")
+        this.load.image('weapon3', "{% static '/resource/ui/character/char/7MELEE.png'%}")
+        this.load.image('weapon4', "{% static '/resource/ui/character/char/11MELEE.png'%}")
+        this.load.image('weapon5', "{% static '/resource/ui/character/char/12MELEE.png'%}")
+
+        //shields
+        this.load.image('shield1', "{% static '/resource/ui/character/char/1SHIELD.png'%}")
+        this.load.image('shield2', "{% static '/resource/ui/character/char/2SHIELD.png'%}")
+        this.load.image('shield3', "{% static '/resource/ui/character/char/3SHIELD.png'%}") 
+        this.load.image('shield4', "{% static '/resource/ui/character/char/4SHIELD.png'%}")
+        this.load.image('shield5', "{% static '/resource/ui/character/char/5SHIELD.png'%}")
+
+        //item icon
+        this.load.image('1helmet', "{% static '/resource/ui/character/icon/helmet1.png'%}");
+        this.load.image('2helmet', "{% static '/resource/ui/character/icon/helmet2.png'%}");
+        this.load.image('3helmet', "{% static '/resource/ui/character/icon/helmet3.png'%}");
+        this.load.image('4helmet', "{% static '/resource/ui/character/icon/helmet4.png'%}");
+        this.load.image('5helmet', "{% static '/resource/ui/character/icon/helmet5.png'%}");
+        this.load.image('1hair', "{% static '/resource/ui/character/icon/hair1.png'%}");
+        this.load.image('2hair', "{% static '/resource/ui/character/icon/hair2.png'%}");
+        this.load.image('3hair', "{% static '/resource/ui/character/icon/hair3.png'%}");
+        this.load.image('4hair', "{% static '/resource/ui/character/icon/hair4.png'%}");
+        this.load.image('5hair', "{% static '/resource/ui/character/icon/hair5.png'%}");
+        this.load.image('1top', "{% static '/resource/ui/character/icon/top1.png'%}");
+        this.load.image('2top', "{% static '/resource/ui/character/icon/top2.png'%}");
+        this.load.image('3top', "{% static '/resource/ui/character/icon/top3.png'%}");
+        this.load.image('1bottom', "{% static '/resource/ui/character/icon/bottom1.png'%}");
+        this.load.image('2bottom', "{% static '/resource/ui/character/icon/bottom2.png'%}");
+        this.load.image('3bottom', "{% static '/resource/ui/character/icon/bottom3.png'%}");
+        this.load.image('4bottom', "{% static '/resource/ui/character/icon/bottom4.png'%}");
+        this.load.image('1shoes', "{% static '/resource/ui/character/icon/shoes1.png'%}");
+        this.load.image('2shoes', "{% static '/resource/ui/character/icon/shoes2.png'%}");
+        this.load.image('3shoes', "{% static '/resource/ui/character/icon/shoes3.png'%}");
+        this.load.image('4shoes', "{% static '/resource/ui/character/icon/shoes4.png'%}");
+        this.load.image('5shoes', "{% static '/resource/ui/character/icon/shoes5.png'%}");
+        this.load.image('1weapon', "{% static '/resource/ui/character/icon/weapon1.png'%}");
+        this.load.image('2weapon', "{% static '/resource/ui/character/icon/weapon2.png'%}");
+        this.load.image('3weapon', "{% static '/resource/ui/character/icon/weapon3.png'%}");
+        this.load.image('4weapon', "{% static '/resource/ui/character/icon/weapon4.png'%}");
+        this.load.image('5weapon', "{% static '/resource/ui/character/icon/weapon5.png'%}");
+        this.load.image('1shield', "{% static '/resource/ui/character/icon/shield1.png'%}");
+        this.load.image('2shield', "{% static '/resource/ui/character/icon/shield2.png'%}");
+        this.load.image('3shield', "{% static '/resource/ui/character/icon/shield3.png'%}");
+        this.load.image('4shield', "{% static '/resource/ui/character/icon/shield4.png'%}");
+        this.load.image('5shield', "{% static '/resource/ui/character/icon/shield5.png'%}");
+
+
+            //UI
+        this.load.image('txt', "{% static '/resource/ui/character/Character txt.png'%}");
+        this.load.image('helmetui', "{% static '/resource/ui/character/헬멧.png'%}");
+        this.load.image('hairui', "{% static '/resource/ui/character/헤어.png'%}");
+        this.load.image('topui', "{% static '/resource/ui/character/상의.png'%}");
+        this.load.image('bottomui', "{% static '/resource/ui/character/하의.png'%}");
+        this.load.image('shoesui', "{% static '/resource/ui/character/신발.png'%}");
+        this.load.image('weaponui', "{% static '/resource/ui/character/무기.png'%}");
+        this.load.image('shieldui', "{% static '/resource/ui/character/방패.png'%}");
+        this.load.image('selectui', "{% static '/resource/ui/character/확정.png'%}");
+
+        this.load.image('mainline', "{% static '/resource/ui/main/mainline.png'%}")
+        this.load.image('home', "{% static '/resource/ui/main/home.png'%}")
+        this.load.image('store', "{% static '/resource/ui/main/store.png'%}")
+        this.load.image('analysis', "{% static '/resource/ui/main/analysis.png'%}")
+        this.load.image('logout', "{% static '/resource/ui/main/logout.png'%}")
+
+        }
+ 
+ 
+ 
+    async function create ()
+    {
+        player = this.physics.add.staticGroup();
+        btn = this.physics.add.staticGroup();
+        ui = this.physics.add.staticGroup();
+         box = this.physics.add.staticGroup();
+        hairs = this.physics.add.staticGroup();
+        tops = this.physics.add.staticGroup();
+        skills = this.physics.add.staticGroup();
+        ui = this.physics.add.staticGroup();
+
+        this.add.image(130,250,'bg').setScale(0.35);
+        this.add.image(110,50,'txt').setScale(0.7);
+        this.add.image(window_width/2, window_height+30, 'mainline');
+
+        var home = this.add.image(window_width*0.17,window_height-36, 'home').setInteractive({cursor:'pointer'})
+        var analysis = this.add.image(window_width*0.4,window_height-36,'analysis').setInteractive({cursor:'pointer'})
+        var store = this.add.image(window_width*0.63,window_height-37,'store').setInteractive({cursor:'pointer'})
+        var exit = this.add.image(window_width*0.85, window_height-36, 'logout').setInteractive({cursor:'pointer'})
+
+        home.on('pointerdown', function(event){
+            window.history.back()
+        })
+
+        //헤어패널
+        var helmetPanel = this.rexUI.add.scrollablePanel({
+            x: window_width/2,
+            y: window_height-170,
+            width: window_width,
+            height: window_height*0.05,
+
+            scrollMode: 1,
+
+            background: this.rexUI.add.roundRectangle(0, 0, 2, 2, 0, COLOR_PRIMARY),
+
+            panel: {
+                child: createPanel(this, data, "helmet"),
+                mask: {
+                    padding: 1,
+                    // layer: this.add.layer()
+                },
+            },
+
+            // scroller: true,
+            scroller: {
+                // pointerOutRelease: false
+            },
+
+            mouseWheelScroller: {
+                focus: false,
+                speed: 0.1
+            },
+
+            space: {
+                left: 10,
+                right: 10,
+                top: 10,
+                bottom: 10,
+                panel: 10,
+            }
+        }).layout()
+
+        //헤어패널
+        var hairPanel = this.rexUI.add.scrollablePanel({
+            x: window_width/2,
+            y: window_height-170,
+            width: window_width,
+            height: window_height*0.05,
+
+            scrollMode: 1,
+
+            background: this.rexUI.add.roundRectangle(0, 0, 2, 2, 0, COLOR_PRIMARY),
+
+            panel: {
+                child: createPanel(this, data, "hair"),
+                mask: {
+                    padding: 1,
+                    // layer: this.add.layer()
+                },
+            },
+
+            // scroller: true,
+            scroller: {
+                // pointerOutRelease: false
+            },
+
+            mouseWheelScroller: {
+                focus: false,
+                speed: 0.1
+            },
+
+            space: {
+                left: 10,
+                right: 10,
+                top: 10,
+                bottom: 10,
+                panel: 10,
+            }
+        }).layout()
+
+        //상의패널
+        var topPanel = this.rexUI.add.scrollablePanel({
+            x: window_width/2,
+            y: window_height-170,
+            width: window_width,
+            height: window_height*0.05,
+
+            scrollMode: 1,
+
+            background: this.rexUI.add.roundRectangle(0, 0, 2, 2, 0, COLOR_PRIMARY),
+
+            panel: {
+                child: createPanel(this, data, "top"),
+                mask: {
+                    padding: 1,
+                    // layer: this.add.layer()
+                },
+            },
+
+            // scroller: true,
+            scroller: {
+                // pointerOutRelease: false
+            },
+
+            mouseWheelScroller: {
+                focus: false,
+                speed: 0.1
+            },
+
+            space: {
+                left: 10,
+                right: 10,
+                top: 10,
+                bottom: 10,
+                panel: 10,
+            }
+        }).layout()
+
+        //하의패널
+        var bottomPanel = this.rexUI.add.scrollablePanel({
+            x: window_width/2,
+            y: window_height-170,
+            width: window_width,
+            height: window_height*0.05,
+
+            scrollMode: 1,
+
+            background: this.rexUI.add.roundRectangle(0, 0, 2, 2, 0, COLOR_PRIMARY),
+
+            panel: {
+                child: createPanel(this, data, "bottom"),
+                mask: {
+                    padding: 1,
+                    // layer: this.add.layer()
+                },
+            },
+
+            // scroller: true,
+            scroller: {
+                // pointerOutRelease: false
+            },
+
+            mouseWheelScroller: {
+                focus: false,
+                speed: 0.1
+            },
+
+            space: {
+                left: 10,
+                right: 10,
+                top: 10,
+                bottom: 10,
+                panel: 10,
+            }
+        }).layout()
+
+        //신발패널
+        var shoePanel = this.rexUI.add.scrollablePanel({
+            x: window_width/2,
+            y: window_height-170,
+            width: window_width,
+            height: window_height*0.05,
+
+            scrollMode: 1,
+
+            background: this.rexUI.add.roundRectangle(0, 0, 2, 2, 0, COLOR_PRIMARY),
+
+            panel: {
+                child: createPanel(this, data, "shoe"),
+                mask: {
+                    padding: 1,
+                    // layer: this.add.layer()
+                },
+            },
+
+            // scroller: true,
+            scroller: {
+                // pointerOutRelease: false
+            },
+
+            mouseWheelScroller: {
+                focus: false,
+                speed: 0.1
+            },
+
+            space: {
+                left: 10,
+                right: 10,
+                top: 10,
+                bottom: 10,
+                panel: 10,
+            }
+        }).layout()
+
+        //무기패널
+        var weaponPanel = this.rexUI.add.scrollablePanel({
+            x: window_width/2,
+            y: window_height-170,
+            width: window_width,
+            height: window_height*0.05,
+
+            scrollMode: 1,
+
+            background: this.rexUI.add.roundRectangle(0, 0, 2, 2, 0, COLOR_PRIMARY),
+
+            panel: {
+                child: createPanel(this, data, "weapon"),
+                mask: {
+                    padding: 1,
+                    // layer: this.add.layer()
+                },
+            },
+
+            // scroller: true,
+            scroller: {
+                // pointerOutRelease: false
+            },
+
+            mouseWheelScroller: {
+                focus: false,
+                speed: 0.1
+            },
+
+            space: {
+                left: 10,
+                right: 10,
+                top: 10,
+                bottom: 10,
+                panel: 10,
+            }
+        }).layout()
+
+        //방패패널
+        var shieldPanel = this.rexUI.add.scrollablePanel({
+            x: window_width/2,
+            y: window_height-170,
+            width: window_width,
+            height: window_height*0.05,
+
+            scrollMode: 1,
+
+            background: this.rexUI.add.roundRectangle(0, 0, 2, 2, 0, COLOR_PRIMARY),
+
+            panel: {
+                child: createPanel(this, data, "shield"),
+                mask: {
+                    padding: 1,
+                    // layer: this.add.layer()
+                },
+            },
+
+            // scroller: true,
+            scroller: {
+                // pointerOutRelease: false
+            },
+
+            mouseWheelScroller: {
+                focus: false,
+                speed: 0.1
+            },
+
+            space: {
+                left: 10,
+                right: 10,
+                top: 10,
+                bottom: 10,
+                panel: 10,
+            }
+        }).layout()
+
+
+        hairPanel.visible=false
+        topPanel.visible=false
+        bottomPanel.visible = false
+        shoePanel.visible = false
+        weaponPanel.visible = false
+        shieldPanel.visible = false
+
+
+        //BTN
+        btn_x = window_width-70
+        btn_y = 110
+        helmetui = btn.create(btn_x,btn_y, 'helmetui').setScale(0.75).setInteractive();
+        hairui = btn.create(btn_x,btn_y+40, 'hairui').setScale(0.75).setInteractive();
+        topui = btn.create(btn_x,btn_y+80, 'topui').setScale(0.75).setInteractive();
+        bottomui = btn.create(btn_x,btn_y+120, 'bottomui').setScale(0.75).setInteractive();
+        shoesui = btn.create(btn_x,btn_y+160, 'shoesui').setScale(0.75).setInteractive();
+        weaponui = btn.create(btn_x,btn_y+200, 'weaponui').setScale(0.75).setInteractive();
+        shieldui = btn.create(btn_x,btn_y+240, 'shieldui').setScale(0.75).setInteractive();
+        selectui = btn.create(btn_x,btn_y+285, 'selectui').setScale(0.8).setInteractive();
+        btnui = [helmetui, hairui, topui, bottomui, shoesui, weaponui, shieldui];
+
+        helmetui.setTint(0xBE9FF6);
+
+        //선택확정버튼 클릭 이벤트
+        selectui.on('pointerover', function(event){
+            this.setTint(0x5E3A9E)
+        })
+        selectui.on('pointerout', function(event){
+            this.clearTint()
+        })
+        selectui.on('pointerdown', function(event){
+            window.location.href = `/mainapp/main`
+        })
+
+        //player
+        x = 105;
+        y = 250;
+        arm_b1 = this.add.sprite(x+8, y+12, 'arm_b1').setScale(0.5); //왼팔 위
+        arm_b3b = this.add.sprite(x+40, y+45, 'arm_b3b').setScale(0.5); //왼손 뒤
+        weapon = this.add.sprite(x+80, y-5, 'weapon').setScale(0.5); //무기
+        arm_b3f = this.add.sprite(x+45, y+45, 'arm_b3f').setScale(0.5); //왼손 앞
+        arm_b2 = this.add.sprite(x+20, y+35, 'arm_b2').setScale(0.5); //왼팔 아래
+        shoulder_b = this.add.sprite(x+2, y-7, 'shoulder_b').setScale(0.5); //왼쪽 어깨
+        
+        leg_b3 = this.add.sprite(x+20, y+105, 'leg_b3').setScale(0.5); //왼발
+        leg_b1 = this.add.sprite(x, y+50, 'leg_b1').setScale(0.5); //왼다리 위
+        leg_b1.angle -= 60;
+        leg_b2 = this.add.sprite(x+10, y+77, 'leg_b2').setScale(0.5); //왼다리 아래
+
+        hip = this.add.sprite(x-15, y+30, 'hip').setScale(0.5); //엉덩이
+        body = this.add.sprite(x-15, y, 'body').setScale(0.5); //몸통
+
+        leg_a3 = this.add.sprite(x-35, y+105, 'leg_a3').setScale(0.5); //오른발
+        leg_a1 = this.add.sprite(x-22, y+50, 'leg_a1').setScale(0.5); //오른다리 위
+        leg_a2 = this.add.sprite(x-30, y+77, 'leg_a2').setScale(0.5); //오른다리 아래
+        leg_a2.angle += 30;
+        
+        arm_a1 = this.add.sprite(x-40, y+12, 'arm_a1').setScale(0.5); //오른팔 위
+        arm_a3 = this.add.sprite(x-42, y+60, 'arm_a3').setScale(0.5); //오른손
+        arm_a2 = this.add.sprite(x-45, y+35, 'arm_a2').setScale(0.5); //오른팔 아래
+        shoulder_a = this.add.sprite(x-35, y-7, 'shoulder_a').setScale(0.5); //오른쪽 어깨
+        
+        face = this.add.sprite(x-10, y-35, 'face').setScale(0.5); //얼굴
+        hair = this.add.sprite(x-10, y-43, 'hair').setScale(0.5); //머리
+        helmet = this.add.sprite(x-11, y-47, 'helmet').setScale(0.55); //헬멧
+        shield = this.add.sprite(x-42, y+50, 'shield').setScale(0.5); //방패
+
+        helmet.visible = false
+
+        //palyer animation
+        //얼굴
+        facetween = this.tweens.add({
+            targets: face,
+            y: face.y-2,
+            paused: false,
+            yoyo: true,
+            repeat: -1
+        });
+
+        //머리
+        hairtween = this.tweens.add({
+            targets: hair,
+            y: hair.y-2,
+            paused: false,
+            yoyo: true,
+            repeat: -1
+        });
+
+        //헬멧
+        helmettween = this.tweens.add({
+            targets: helmet,
+            y: helmet.y-2,
+            paused: false,
+            yoyo: true,
+            repeat: -1
+        });
+
+        //몸통
+        bodyween = this.tweens.add({
+            targets: body,
+            y: body.y-2,
+            paused: false,
+            yoyo: true,
+            repeat: -1
+        });
+
+        //오른다리 아래
+        leg_a2tween = this.tweens.add({
+            targets: leg_a2,
+            angle: 35,
+            y: leg_a2.y-2,
+            paused: false,
+            yoyo: true,
+            repeat: -1
+        });
+
+        //오른손
+        arm_a3tween = this.tweens.add({
+            targets: arm_a3,
+            angle: -5,
+            y: arm_a3.y+2,
+            paused: false,
+            yoyo: true,
+            repeat: -1
+        });
+
+        //오른팔 위
+        arm_a1tween = this.tweens.add({
+            targets: arm_a1,
+            angle: -5,
+            y: arm_a1.y+2,
+            paused: false,
+            yoyo: true,
+            repeat: -1
+        });
+
+        //오른팔 아래
+        arm_a2tween = this.tweens.add({
+            targets: arm_a2,
+            angle: -5,
+            y: arm_a2.y+2,
+            paused: false,
+            yoyo: true,
+            repeat: -1
+        });
+
+        //왼다리 아래
+        leg_b2tween = this.tweens.add({
+            targets: leg_b2,
+            angle: 5,
+            y: leg_b2.y-2,
+            paused: false,
+            yoyo: true,
+            repeat: -1
+        });
+
+        //왼손 뒤
+        arm_b3btween = this.tweens.add({
+            targets: arm_b3b,
+            angle: -5,
+            y: arm_b3b.y+2,
+            paused: false,
+            yoyo: true,
+            repeat: -1
+        });
+
+        //왼손 앞
+        arm_b3ftween = this.tweens.add({
+            targets: arm_b3f,
+            angle: -5,
+            y: arm_b3f.y+2,
+            paused: false,
+            yoyo: true,
+            repeat: -1
+        });
+
+        //왼팔 위
+        arm_b1tween = this.tweens.add({
+            targets: arm_b1,
+            angle: -5,
+            y: arm_b1.y+2,
+            paused: false,
+            yoyo: true,
+            repeat: -1
+        });
+
+        //왼팔 아래
+        arm_b2tween = this.tweens.add({
+            targets: arm_b2,
+            angle: -5,
+            y: arm_b2.y+2,
+            paused: false,
+            yoyo: true,
+            repeat: -1
+        });
+
+
+        //무기
+        weapontween = this.tweens.add({
+            targets: weapon,
+            angle: -2,
+            y: weapon.y-2,
+            paused: false,
+            yoyo: true,
+            repeat: -1
+        });
+
+        //방패
+        shieldtween = this.tweens.add({
+            targets: shield,
+            angle: 2,
+            y: shield.y-2,
+            paused: false,
+            yoyo: true,
+            repeat: -1
+        });
+        //palyer animation end
+
+
+        //버튼 클릭 이벤트
+        this.input.on('gameobjectdown', function(pointer, gameObject){
+
+            if(gameObject==helmetui){
+                choicetype(0);
+                helmetPanel.visible = true
+                hairPanel.visible = false
+                topPanel.visible = false
+                bottomPanel.visible = false
+                shoePanel.visible = false
+                weaponPanel.visible = false
+                shieldPanel.visible = false
+            }
+            if(gameObject==hairui){
+                choicetype(1);
+                helmetPanel.visible = false
+                hairPanel.visible = true
+                topPanel.visible = false
+                bottomPanel.visible = false
+                shoePanel.visible = false
+                weaponPanel.visible = false
+                shieldPanel.visible = false
+            }
+            if(gameObject==topui){
+                choicetype(2);
+                helmetPanel.visible = false
+                hairPanel.visible = false
+                topPanel.visible = true
+                bottomPanel.visible = false
+                shoePanel.visible = false
+                weaponPanel.visible = false
+                shieldPanel.visible = false
+            }
+            if(gameObject==bottomui){
+                choicetype(3);
+                helmetPanel.visible = false
+                hairPanel.visible = false
+                topPanel.visible = false
+                bottomPanel.visible = true
+                shoePanel.visible = false
+                weaponPanel.visible = false
+                shieldPanel.visible = false
+            }
+            if(gameObject==shoesui){
+                choicetype(4);
+                helmetPanel.visible = false
+                hairPanel.visible = false
+                topPanel.visible = false
+                bottomPanel.visible = false
+                shoePanel.visible = true
+                weaponPanel.visible = false
+                shieldPanel.visible = false
+            }
+            if(gameObject==weaponui){
+                choicetype(5);
+                helmetPanel.visible = false
+                hairPanel.visible = false
+                topPanel.visible = false
+                bottomPanel.visible = false
+                shoePanel.visible = false
+                weaponPanel.visible = true
+                shieldPanel.visible = false
+            }
+            if(gameObject==shieldui){
+                choicetype(6);
+                helmetPanel.visible = false
+                hairPanel.visible = false
+                topPanel.visible = false
+                bottomPanel.visible = false
+                shoePanel.visible = false
+                weaponPanel.visible = false
+                shieldPanel.visible = true
+            }
+        })
+
+        //패널에서 아이템 클릭시 캐릭터에 적용
+        helmetPanel.setChildrenInteractive({
+            targets: [
+                helmetPanel.getByName('helmet', true)
+            ]
+        })
+            .on('child.click', function (child) {
+                var category = child.getParentSizer().name;
+                helmetname = child.text
+                if (helmetname == '1helmet'){
+                    helmet.setTexture('helmet1')
+                }
+                if (helmetname == '2helmet'){
+                    helmet.setTexture('helmet2')
+                }
+                if (helmetname == '3helmet'){
+                    helmet.setTexture('helmet3')
+                }
+                if (helmetname == '4helmet'){
+                    helmet.setTexture('helmet4')
+                }
+                if (helmetname == '5helmet'){
+                    helmet.setTexture('helmet5')
+                }
+                helmet.visible = true
+            })
+
+        hairPanel.setChildrenInteractive({
+            targets: [
+                hairPanel.getByName('hair', true)
+            ]
+        })
+            .on('child.click', function (child) {
+                var category = child.getParentSizer().name;
+                hairname = child.text
+                if (hairname == '1hair'){
+                    hair.setTexture('hair1')
+                }
+                if (hairname == '2hair'){
+                    hair.setTexture('hair2')
+                }
+                if (hairname == '3hair'){
+                    hair.setTexture('hair3')
+                }
+                if (hairname == '4hair'){
+                    hair.setTexture('hair4')
+                }
+                if (hairname == '5hair'){
+                    hair.setTexture('hair5')
+                }
+            })
+
+        topPanel.setChildrenInteractive({
+            targets: [
+                topPanel.getByName('top', true)
+            ]
+        })
+            .on('child.click', function (child) {
+                var category = child.getParentSizer().name;
+                topname = child.text
+                if (topname == '1top'){
+                    arm_a1.setTexture('arm_a11')
+                    arm_a2.setTexture('arm_a21')
+                    arm_a3.setTexture('arm_a31')
+                    arm_b1.setTexture('arm_b11')
+                    arm_b2.setTexture('arm_b21')
+                    arm_b3b.setTexture('arm_b3b1')
+                    arm_b3f.setTexture('arm_b3f1')
+                    shoulder_a.setTexture('shoulder_a1')
+                    shoulder_b.setTexture('shoulder_b1')
+                    body.setTexture('body1')
+                    hip.setTexture('hip1')
+                }
+                if (topname == '2top'){
+                    arm_a1.setTexture('arm_a12')
+                    arm_a2.setTexture('arm_a22')
+                    arm_a3.setTexture('arm_a32')
+                    arm_b1.setTexture('arm_b12')
+                    arm_b2.setTexture('arm_b22')
+                    arm_b3b.setTexture('arm_b3b2')
+                    arm_b3f.setTexture('arm_b3f2')
+                    shoulder_a.setTexture('shoulder_a2')
+                    shoulder_b.setTexture('shoulder_b2')
+                    body.setTexture('body2')
+                    hip.setTexture('hip2')
+                }
+                if (topname == '3top'){
+                    arm_a1.setTexture('arm_a13')
+                    arm_a2.setTexture('arm_a23')
+                    arm_a3.setTexture('arm_a33')
+                    arm_b1.setTexture('arm_b13')
+                    arm_b2.setTexture('arm_b23')
+                    arm_b3b.setTexture('arm_b3b3')
+                    arm_b3f.setTexture('arm_b3f3')
+                    shoulder_a.setTexture('shoulder_a3')
+                    shoulder_b.setTexture('shoulder_b3')
+                    body.setTexture('body3')
+                    hip.setTexture('hip3')
+                }
+                console.log(child.text)
+            })
+
+        bottomPanel.setChildrenInteractive({
+            targets: [
+                bottomPanel.getByName('bottom', true)
+            ]
+        })
+            .on('child.click', function (child) {
+                var category = child.getParentSizer().name;
+                bottomname = child.text
+                if (bottomname == '1bottom'){
+                    leg_a1.setTexture('leg_a11')
+                    leg_a2.setTexture('leg_a21')
+                    leg_b1.setTexture('leg_b11')
+                    leg_b2.setTexture('leg_b21')
+                }
+                if (bottomname == '2bottom'){
+                    leg_a1.setTexture('leg_a12')
+                    leg_a2.setTexture('leg_a22')
+                    leg_b1.setTexture('leg_b12')
+                    leg_b2.setTexture('leg_b22')
+                }
+                if (bottomname == '3bottom'){
+                    leg_a1.setTexture('leg_a13')
+                    leg_a2.setTexture('leg_a23')
+                    leg_b1.setTexture('leg_b13')
+                    leg_b2.setTexture('leg_b23')
+                }
+                if (bottomname == '4bottom'){
+                    leg_a1.setTexture('leg_a14')
+                    leg_a2.setTexture('leg_a24')
+                    leg_b1.setTexture('leg_b14')
+                    leg_b2.setTexture('leg_b24')
+                }
+            })
+
+        shoePanel.setChildrenInteractive({
+            targets: [
+                shoePanel.getByName('shoe', true)
+            ]
+        })
+            .on('child.click', function (child) {
+                var category = child.getParentSizer().name;
+                shoesname = child.text;
+                if (shoesname == '1shoes'){
+                    leg_a3.setTexture('leg_a31')
+                    leg_b3.setTexture('leg_b31')
+                }
+                if (shoesname == '2shoes'){
+                    leg_a3.setTexture('leg_a32')
+                    leg_b3.setTexture('leg_b32')
+                }
+                if (shoesname == '3shoes'){
+                    leg_a3.setTexture('leg_a33')
+                    leg_b3.setTexture('leg_b33')
+                }
+                if (shoesname == '4shoes'){
+                    leg_a3.setTexture('leg_a34')
+                    leg_b3.setTexture('leg_b34')
+                }
+                if (shoesname == '5shoes'){
+                    leg_a3.setTexture('leg_a35')
+                    leg_b3.setTexture('leg_b35')
+                }
+            })
+
+        weaponPanel.setChildrenInteractive({
+            targets: [
+                weaponPanel.getByName('weapon', true)
+            ]
+        })
+            .on('child.click', function (child) {
+                var category = child.getParentSizer().name;
+                weaponname = child.text
+                if (weaponname == '1weapon'){
+                    weapon.setTexture('weapon1')
+                }
+                if (weaponname == '2weapon'){
+                    weapon.setTexture('weapon2')
+                }
+                if (weaponname == '3weapon'){
+                    weapon.setTexture('weapon3')
+                }
+                if (weaponname == '4weapon'){
+                    weapon.setTexture('weapon4')
+                }
+                if (weaponname == '5weapon'){
+                    weapon.setTexture('weapon5')
+                }
+            })
+
+        shieldPanel.setChildrenInteractive({
+            targets: [
+                shieldPanel.getByName('shield', true)
+            ]
+        })
+            .on('child.click', function (child) {
+                var category = child.getParentSizer().name;
+                shieldname = child.text
+                if (shieldname == '1shield'){
+                    shield.setTexture('shield1')
+                }
+                if (shieldname == '2shield'){
+                    shield.setTexture('shield2')
+                }
+                if (shieldname == '3shield'){
+                    shield.setTexture('shield3')
+                }
+                if (shieldname == '4shield'){
+                    shield.setTexture('shield4')
+                }
+                if (shieldname == '5shield'){
+                    shield.setTexture('shield5')
+                }
+            })
+
+        function choicetype(num){
+            for(var i=0;i<btnui.length;i++){
+                if (num==i){
+                    btnui[i].setTint(0xBE9FF6);
+                }
+                if(num!=i){
+                    btnui[i].clearTint();
+
+                }
+            }
+        } 
+        }
+
+  //end create
+  
+
+
+
+
+
+
+  //Game Main
+  function update ()
+  { 
+    
+  }
+  
+  
+  
+  var config = {
+    type: Phaser.AUTO,
+    width: window_width,
+    height: window_height,
+    physics: {
+        default: 'arcade',
+        arcade: {
+            debug: false,
+            gravity: {
+                y: 0
+            }
+        }
+    },
+    backgroundColor: '#ffffff',
+    scene: {
+      preload: preload,
+      create: create,
+      update:update,
+    },
+    scale: {
+        mode: Phaser.Scale.ScaleModes.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+    },
+    pixelArt: false,
+    render:{
+      antialias: true
+    },
+  }
+  var game =  new Phaser.Game(config)
+</script>
+{% endblock script %}

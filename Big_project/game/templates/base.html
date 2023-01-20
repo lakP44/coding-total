@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <title>얼굴 게임</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{% static 'style.css' %}" type="text/css" />
+    <!-- Font Awesome -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- MDB -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.0.1/mdb.min.css"
+      rel="stylesheet"
+    />
+    <!-- MDB -->
+    <script
+      type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.0.1/mdb.min.js"
+    ></script>
+
+    <!-- Phaser -->
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
+    <!-- Phaser plugin -->
+    <script src="//cdn.jsdelivr.net/npm/phaser-plugin-debug-game-scale@3.3.0"></script>
+    {% block style %} {% endblock %}
+    {% block headScript %}{% endblock headScript %}
+  </head>
+  <body>
+    {% block content %} {% endblock %} 
+    {% block script %} {% endblock%}
+  </body>
+</html>

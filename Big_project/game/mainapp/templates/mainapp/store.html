@@ -1,0 +1,876 @@
+{% extends "base.html" %}
+{%load static%}
+{% block script %}
+  <script src={% static 'js/window.js' %}></script>
+  <script type="text/javascript" src="http://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script>
+    const COLOR_PRIMARY = 0xF5F5F5;
+    const COLOR_LIGHT = 0xD0CCCC;
+    const COLOR_DARK = 0x260e04;
+    var shopData
+    var itemData
+    var itemPay
+    var itemName
+    var itemID
+    var data = {
+      hair: [],
+      top: [],
+      bottom: [],
+      shoe: [],
+      weapon: []
+    }
+    var userID
+    var userMoney
+    var childData
+
+    var createPanel = function (scene, data, state) {
+      var sizer = scene
+        .rexUI
+        .add
+        .sizer({
+          orientation: 'y',
+          space: {
+            item: 10
+          }
+        })
+        .add(createTable(scene, data, state, 4), { // child
+          expand: true
+        })
+      return sizer;
+    }
+
+    var createTable = function (scene, data, key, columns) {
+      var capKey = key
+        .charAt(0)
+        .toUpperCase() + key.slice(1);
+      var title = scene
+        .rexUI
+        .add
+        .label({
+          orientation: 'x',
+          text: scene
+            .add
+            .text(0, 0, capKey, {color: 'black'})
+        });
+
+      var items = data[key];
+      var rows = Math.ceil(items.length / columns);
+      var table = scene
+        .rexUI
+        .add
+        .gridSizer({
+          column: columns,
+          row: rows,
+
+          rowProportions: 1,
+          space: {
+            column: 10,
+            row: 10
+          },
+          name: key // Search this name to get table back
+        });
+
+      var item,
+        r,
+        c;
+      var iconSize = 70;
+      for (var i = 0, cnt = items.length; i < cnt; i++) {
+        item = items[i];
+        r = i % columns;
+        c = (i - r) / columns;
+        table.add(createIcon(scene, item, iconSize, iconSize), r, c, 'top', 0, true);
+      }
+
+      return scene
+        .rexUI
+        .add
+        .sizer({
+          orientation: 'y',
+          space: {
+            left: 15,
+            right: 10,
+            top: 10,
+            bottom: 10,
+            item: 10
+          }
+        })
+        .addBackground(scene.rexUI.add.roundRectangle(0, 0, 0, 0, 0, undefined).setStrokeStyle(2, COLOR_LIGHT, 1))
+        .add(title, // child
+            0, // proportion
+            'left', // align
+            0, // paddingConfig
+            true)
+        .add(table, // child
+            1, // proportion
+            'center', // align
+            0, // paddingConfig
+            true);
+    }
+    // panel에 아이콘으로 아이템 이미지를 보여주기 위함
+    var createIcon = function (scene, item, iconWidth, iconHeight) {
+      var label = scene
+        .rexUI
+        .add
+        .label({
+          orientation: 'y',
+          icon: scene
+            .add
+            .image(0, 0, item.name)
+            .setScale(0.9),
+          //icon : scene.rexUI.add.roundRectangle(0, 0, iconWidth, iconHeight, 5, COLOR_LIGHT),
+          text: scene
+            .add
+            .text(0, 0, item.name, {
+              color: 'black',
+              font: '16px Arial'
+            }),
+
+          space: {
+            top: 10,
+            icon: 10
+          }
+        });
+
+      return label;
+    };
+
+    async function preload() {
+      this
+        .load
+        .scenePlugin({key: 'rexuiplugin', url: 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexuiplugin.min.js', sceneKey: 'rexUI'})
+      this
+        .load
+        .audio('store_music', "{% static '/resource/bgm/store_music.mp3'%}")
+      this
+        .load
+        .image('count', "{% static '/resource/ui/store/count2.png'%}")
+
+      this
+        .load
+        .image('mainline', "{% static '/resource/ui/main/mainline.png'%}")
+      this
+        .load
+        .image('home', "{% static '/resource/ui/main/home.png'%}")
+      this
+        .load
+        .image('store', "{% static '/resource/ui/main/store.png'%}")
+      this
+        .load
+        .image('analysis', "{% static '/resource/ui/main/analysis.png'%}")
+      this
+        .load
+        .image('logout', "{% static '/resource/ui/main/logout.png'%}")
+
+      this
+        .load
+        .image('soldOut', "{% static '/resource/ui/store/soldOut.png'%}")
+
+      // DB에서 SHOP 불러오기
+      await fetch('http://localhost:8000/mainapp/api/shop')
+        .then(res => res.json())
+        .then((data) => {
+          shopData = data
+        })
+      // DB에서 ITEM 불러오기
+      await fetch('http://localhost:8000/mainapp/api/item')
+        .then(res => res.json())
+        .then((data) => {
+          itemData = data
+        })
+      // 아이템 이미지가 추가되어있지 않으면 오류가 생깁니다. admin에 가서 추가하시면 됩니다.
+      for (i = 0; i < itemData.length; i++) {
+        const item = itemData[i]
+        const shop = shopData[i]
+        if (item.type == '머리') {
+          data['hair'].push({id: item.id, name: item.name, pay: shop.pay, img: item.images})
+        }
+        if (item.type == '상의') {
+          data['top'].push({id: item.id, name: item.name, pay: shop.pay, img: item.images})
+        }
+        if (item.type == '하의') {
+          data['bottom'].push({id: item.id, name: item.name, pay: shop.pay, img: item.images})
+        }
+        if (item.type == '신발') {
+          data['shoe'].push({id: item.id, name: item.name, pay: shop.pay, img: item.images})
+        }
+        if (item.type == '무기') {
+          data['weapon'].push({id: item.id, name: item.name, pay: shop.pay, img: item.images})
+        }
+      }
+
+      //DB에서 불러온 이미지를 load해주는 작업
+      for (i = 0; i < data.hair.length; i++) {
+        this
+          .load
+          .image(`헤어${i + 1}`, data.hair[i].img[0].image)
+      }
+      for (i = 0; i < data.top.length; i++) {
+        this
+          .load
+          .image(`상의${i + 1}`, data.top[i].img[0].image)
+      }
+      for (i = 0; i < data.bottom.length; i++) {
+        this
+          .load
+          .image(`하의${i + 1}`, data.bottom[i].img[0].image)
+      }
+      for (i = 0; i < data.shoe.length; i++) {
+        this
+          .load
+          .image(`신발${i + 1}`, data.shoe[i].img[0].image)
+      }
+      for (i = 0; i < data.weapon.length; i++) {
+        this
+          .load
+          .image(`무기${i + 1}`, data.weapon[i].img[0].image)
+      }
+    }
+
+    async function create() {
+      this.bgm = this
+        .sound
+        .add("store_music", {
+          loop: true,
+          volume: 0.1
+        })
+      this
+        .bgm
+        .play()
+      this
+        .add
+        .image(window_width / 2 + (window_width * 0.04), 40, 'count')
+        .setInteractive({cursor: 'pointer'})
+
+      var hairButton = this
+        .add
+        .rectangle(window_width / 6, 85, 50, 30, 0xD0CCCC)
+        .setInteractive({cursor: 'pointer'})
+      this
+        .add
+        .text(window_width / 6 - (window_width * 0.045), 77, '머리', {
+          color: 'black',
+          font: '16px Arial'
+        })
+      var topButton = this
+        .add
+        .rectangle(window_width / 6 * 2, 85, 50, 30, 0xD0CCCC)
+        .setInteractive({cursor: 'pointer'})
+      this
+        .add
+        .text(window_width / 6 * 2 - (window_width * 0.045), 77, '상의', {
+          color: 'black',
+          font: '16px Arial'
+        })
+      var bottomButton = this
+        .add
+        .rectangle(window_width / 6 * 3, 85, 50, 30, 0xD0CCCC)
+        .setInteractive({cursor: 'pointer'})
+      this
+        .add
+        .text(window_width / 6 * 3 - (window_width * 0.045), 77, '하의', {
+          color: 'black',
+          font: '16px Arial'
+        })
+      var shoeButton = this
+        .add
+        .rectangle(window_width / 6 * 4, 85, 50, 30, 0xD0CCCC)
+        .setInteractive({cursor: 'pointer'})
+      this
+        .add
+        .text(window_width / 6 * 4 - (window_width * 0.045), 77, '신발', {
+          color: 'black',
+          font: '16px Arial'
+        })
+      var weaponButton = this
+        .add
+        .rectangle(window_width / 6 * 5, 85, 50, 30, 0xD0CCCC)
+        .setInteractive({cursor: 'pointer'})
+      this
+        .add
+        .text(window_width / 6 * 5 - (window_width * 0.045), 77, '무기', {
+          color: 'black',
+          font: '16px Arial'
+        })
+
+      this
+        .add
+        .image(window_width / 2, window_height + 30, 'mainline')
+      var home = this
+        .add
+        .image(window_width * 0.17, window_height - 36, 'home')
+        .setInteractive({cursor: 'pointer'})
+      var analysis = this
+        .add
+        .image(window_width * 0.4, window_height - 36, 'analysis')
+        .setInteractive({cursor: 'pointer'})
+      var store = this
+        .add
+        .image(window_width * 0.63, window_height - 37, 'store')
+        .setInteractive({cursor: 'pointer'})
+      var exit = this
+        .add
+        .image(window_width * 0.85, window_height - 36, 'logout')
+        .setInteractive({cursor: 'pointer'})
+
+      home.on('pointerdown', function (event) {
+        window.location.href = `/mainapp/main`
+      })
+
+      store.on('pointerdown', function (event) {
+        window.location.href = `/mainapp/store`
+      })
+
+      analysis.on('pointerdown', function (event) {
+        window.location.href = `/mainapp/analysis`
+      })
+
+      exit.on('pointerdown', function (event) {
+        window.location.href = `/accounts/logout`
+      })
+
+      this.money = this
+        .add
+        .text(window_width / 2 - (window_width * 0.09), 28, "", {
+          color: 'black',
+          font: '550 23px Poppins'
+        })
+
+      await fetch('http://localhost:8000/core/api/user')
+        .then(res => res.json())
+        .then((data) => {
+          let money = String(data.money)
+          this
+            .money
+            .setText(money)
+          userID = data.id
+          userMoney = data.money
+        })
+
+      if (localStorage.getItem('bgm') == 'true') {
+        this.bgm = this
+          .sound
+          .play("store_music", {loop: true})
+      } else if (localStorage.getItem('bgm') == 'false') {
+        game.sound.mute = true
+      }
+
+      var hairPanel = this
+        .rexUI
+        .add
+        .scrollablePanel({
+          x: window_width / 2,
+          y: window_height / 2,
+          width: window_width,
+          height: window_height * 0.7,
+          scrollMode: 0,
+
+          background: this
+            .rexUI
+            .add
+            .roundRectangle(0, 0, 0, 0, 0, 0xffffff),
+
+          panel: {
+            child: createPanel(this, data, 'hair'),
+            mask: {
+              padding: 0,
+            }
+          },
+
+          mouseWheelScroller: {
+            focus: false,
+            speed: 0.1
+          },
+
+          space: {
+            left: 10,
+            right: 10,
+            top: 10,
+            bottom: 10,
+            panel: 10,
+          }
+        })
+        .layout()
+
+      var topPanel = this
+        .rexUI
+        .add
+        .scrollablePanel({
+          x: window_width / 2,
+          y: window_height / 2,
+          width: window_width,
+          height: window_height * 0.7,
+          scrollMode: 0,
+
+          background: this
+            .rexUI
+            .add
+            .roundRectangle(0, 0, 0, 0, 0, 0xffffff),
+
+          panel: {
+            child: createPanel(this, data, 'top'),
+            mask: {
+              padding: 0,
+            }
+          },
+
+          mouseWheelScroller: {
+            focus: false,
+            speed: 0.1
+          },
+
+          space: {
+            left: 10,
+            right: 10,
+            top: 10,
+            bottom: 10,
+            panel: 10,
+          }
+        })
+        .layout()
+
+      topPanel.visible = false
+
+      var bottomPanel = this
+        .rexUI
+        .add
+        .scrollablePanel({
+          x: window_width / 2,
+          y: window_height / 2,
+          width: window_width,
+          height: window_height * 0.7,
+          scrollMode: 0,
+
+          background: this
+            .rexUI
+            .add
+            .roundRectangle(0, 0, 0, 0, 0, 0xffffff),
+
+          panel: {
+            child: createPanel(this, data, 'bottom'),
+            mask: {
+              padding: 0,
+            }
+          },
+
+          mouseWheelScroller: {
+            focus: false,
+            speed: 0.1
+          },
+
+          space: {
+            left: 10,
+            right: 10,
+            top: 10,
+            bottom: 10,
+            panel: 10,
+          }
+        })
+        .layout()
+
+      bottomPanel.visible = false
+
+      var shoePanel = this
+        .rexUI
+        .add
+        .scrollablePanel({
+          x: window_width / 2,
+          y: window_height / 2,
+          width: window_width,
+          height: window_height * 0.7,
+          scrollMode: 0,
+
+          background: this
+            .rexUI
+            .add
+            .roundRectangle(0, 0, 0, 0, 0, 0xffffff),
+
+          panel: {
+            child: createPanel(this, data, 'shoe'),
+            mask: {
+              padding: 0,
+            }
+          },
+
+          mouseWheelScroller: {
+            focus: false,
+            speed: 0.1
+          },
+
+          space: {
+            left: 10,
+            right: 10,
+            top: 10,
+            bottom: 10,
+            panel: 10,
+          }
+        })
+        .layout()
+
+      shoePanel.visible = false
+
+      var weaponPanel = this
+        .rexUI
+        .add
+        .scrollablePanel({
+          x: window_width / 2,
+          y: window_height / 2,
+          width: window_width,
+          height: window_height * 0.7,
+          scrollMode: 0,
+
+          background: this
+            .rexUI
+            .add
+            .roundRectangle(0, 0, 0, 0, 0, 0xffffff),
+
+          panel: {
+            child: createPanel(this, data, 'weapon'),
+            mask: {
+              padding: 0,
+            }
+          },
+
+          mouseWheelScroller: {
+            focus: false,
+            speed: 0.1
+          },
+
+          space: {
+            left: 10,
+            right: 10,
+            top: 10,
+            bottom: 10,
+            panel: 10,
+          }
+        })
+        .layout()
+
+      weaponPanel.visible = false
+
+      hairButton.on('pointerdown', function (event) {
+        if (hairPanel.visible == false) {
+          topPanel.visible = false
+          bottomPanel.visible = false
+          shoePanel.visible = false
+          weaponPanel.visible = false
+
+        }
+        if (hairPanel.visible == true) {
+          hairPanel.visible = false
+        } else {
+          hairPanel.visible = true
+        }
+      })
+
+      topButton.on('pointerdown', function (event) {
+        if (topPanel.visible == false) {
+          hairPanel.visible = false
+          bottomPanel.visible = false
+          shoePanel.visible = false
+          weaponPanel.visible = false
+
+        }
+        if (topPanel.visible == true) {
+          topPanel.visible = false
+        } else {
+          topPanel.visible = true
+        }
+      })
+
+      bottomButton.on('pointerdown', function (event) {
+        if (bottomPanel.visible == false) {
+          hairPanel.visible = false
+          topPanel.visible = false
+          shoePanel.visible = false
+          weaponPanel.visible = false
+
+        }
+        if (bottomPanel.visible == true) {
+          bottomPanel.visible = false
+        } else {
+          bottomPanel.visible = true
+        }
+      })
+
+      shoeButton.on('pointerdown', function (event) {
+        if (shoePanel.visible == false) {
+          hairPanel.visible = false
+          bottomPanel.visible = false
+          shoePanel.visible = false
+          weaponPanel.visible = false
+
+        }
+        if (shoePanel.visible == true) {
+          shoePanel.visible = false
+        } else {
+          shoePanel.visible = true
+        }
+      })
+
+      weaponButton.on('pointerdown', function (event) {
+        if (weaponPanel.visible == false) {
+          hairPanel.visible = false
+          topPanel.visible = false
+          bottomPanel.visible = false
+          shoePanel.visible = false
+
+        }
+        if (weaponPanel.visible == true) {
+          weaponPanel.visible = false
+        } else {
+          weaponPanel.visible = true
+        }
+      })
+
+      var productPanel = this
+        .add
+        .rectangle(window_width / 2, 250, window_width * 0.8, window_height * 0.3, 0xffffff)
+        .setInteractive({pointer: 'cursor'})
+      productPanel.visible = false
+      productPanel.setStrokeStyle(1, 0x4f4f4f)
+
+      var purchaseButton = this
+        .add
+        .rectangle(window_width / 2, 300, 50, 30, 0xD0CCCC)
+        .setInteractive({cursor: 'pointer'})
+      var purchaseText = this
+        .add
+        .text(window_width / 2 - 16, 290, "구매", {
+          color: 'black',
+          font: '16px Arial'
+        })
+      purchaseButton.visible = false
+      purchaseText.visible = false
+
+      var itemText = this
+        .add
+        .text(window_width / 2 - 5, 190, "", {
+          color: 'black',
+          font: '16px Arial'
+        })
+      var payText = this
+        .add
+        .text(window_width / 2 - 5, 220, "", {
+          color: 'black',
+          font: '16px Arial'
+        })
+      var ItemImg = this
+        .add
+        .image(window_width / 2 - 70, 230, "헤어1")
+      itemText.visible = false
+      ItemImg.visible = false
+      payText.visible = false
+
+      var errorPanel = this
+        .add
+        .rectangle(window_width / 2, 250, window_width * 0.5, 50, 0xffffff)
+      var errorText = this
+        .add
+        .text(window_width / 2 - window_width * 0.18, 240, "구매할 수 없습니다.", {
+          color: 'black',
+          font: '16px Arial'
+        })
+      errorPanel.setStrokeStyle(1, 0x4f4f4f)
+      errorPanel.visible = false
+      errorText.visible = false
+
+      hairPanel
+        .setChildrenInteractive({
+          targets: [hairPanel.getByName('hair', true)]
+        })
+        .on('child.click', function (child) {
+          var category = child
+            .getParentSizer()
+            .name
+          for (i = 0; i < data[category].length; i++) {
+            if (data[category][i].name == child.text) {
+              itemName = child.text
+              itemPay = data[category][i].pay
+              itemID = data[category][i].id
+            }
+          }
+          childData = child
+          productPanel.visible = true
+          itemText.setText('아이템명 : ' + itemName)
+          payText.setText('상품 가격 : ' + itemPay)
+          ItemImg.setTexture(`${itemName}`)
+          purchaseButton.visible = true
+          purchaseText.visible = true
+          itemText.visible = true
+          payText.visible = true
+          ItemImg.visible = true
+        })
+
+      topPanel
+        .setChildrenInteractive({
+          targets: [topPanel.getByName('top', true)]
+        })
+        .on('child.click', function (child) {
+          var category = child
+            .getParentSizer()
+            .name
+          for (i = 0; i < data[category].length; i++) {
+            if (data[category][i].name == child.text) {
+              itemName = child.text
+              itemPay = data[category][i].pay
+            }
+          }
+          productPanel.visible = true
+          itemText.setText('아이템명 : ' + itemName)
+          payText.setText('상품 가격 : ' + itemPay)
+          ItemImg.setTexture(`${itemName}`)
+          purchaseButton.visible = true
+          purchaseText.visible = true
+          itemText.visible = true
+          payText.visible = true
+          ItemImg.visible = true
+        })
+
+      bottomPanel
+        .setChildrenInteractive({
+          targets: [bottomPanel.getByName('bottom', true)]
+        })
+        .on('child.click', function (child) {
+          var category = child
+            .getParentSizer()
+            .name
+          for (i = 0; i < data[category].length; i++) {
+            if (data[category][i].name == child.text) {
+              itemName = child.text
+              itemPay = data[category][i].pay
+            }
+          }
+          productPanel.visible = true
+          itemText.setText('아이템명 : ' + itemName)
+          payText.setText('상품 가격 : ' + itemPay)
+          ItemImg.setTexture(`${itemName}`)
+          purchaseButton.visible = true
+          purchaseText.visible = true
+          itemText.visible = true
+          payText.visible = true
+          ItemImg.visible = true
+        })
+
+      shoePanel
+        .setChildrenInteractive({
+          targets: [shoePanel.getByName('shoe', true)]
+        })
+        .on('child.click', function (child) {
+          var category = child
+            .getParentSizer()
+            .name
+          for (i = 0; i < data[category].length; i++) {
+            if (data[category][i].name == child.text) {
+              itemName = child.text
+              itemPay = data[category][i].pay
+            }
+          }
+          productPanel.visible = true
+          itemText.setText('아이템명 : ' + itemName)
+          payText.setText('상품 가격 : ' + itemPay)
+          ItemImg.setTexture(`${itemName}`)
+          purchaseButton.visible = true
+          purchaseText.visible = true
+          itemText.visible = true
+          payText.visible = true
+          ItemImg.visible = true
+        })
+
+      weaponPanel
+        .setChildrenInteractive({
+          targets: [weaponPanel.getByName('weapon', true)]
+        })
+        .on('child.click', function (child) {
+          var category = child
+            .getParentSizer()
+            .name
+          for (i = 0; i < data[category].length; i++) {
+            if (data[category][i].name == child.text) {
+              itemName = child.text
+              itemPay = data[category][i].pay
+            }
+          }
+          productPanel.visible = true
+          itemText.setText('아이템명 : ' + itemName)
+          payText.setText('상품 가격 : ' + itemPay)
+          ItemImg.setTexture(`${itemName}`)
+          purchaseButton.visible = true
+          purchaseText.visible = true
+          itemText.visible = true
+          payText.visible = true
+          ItemImg.visible = true
+        })
+
+      productPanel.on('pointerdown', function (event) {
+        productPanel.visible = false
+        itemText.visible = false
+        payText.visible = false
+        ItemImg.visible = false
+        purchaseButton.visible = false
+        purchaseText.visible = false
+        errorPanel.visible = false
+        errorText.visible = false
+      })
+
+      purchaseButton.on('pointerdown', function (event) {
+        var chargeMoney = userMoney - itemPay
+        if (chargeMoney < 0) {
+          errorPanel.visible = true
+          errorText.visible = true
+        } else {
+          $.ajax({
+            url: 'api/store-post/',
+            async: false,
+            type: 'POST',
+            data: {
+              "userID": userID,
+              "itemID": itemID,
+              csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            datatype: 'json',
+            headers: {
+              "X-CSRFToken": "{{ csrf_token }}"
+            }
+          })
+          $.ajax({
+            url: 'api/store-money/',
+            async: false,
+            type: 'PATCH',
+            data: {
+              "money": itemPay,
+              csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            datatype: 'json',
+            headers: {
+              "X-CSRFToken": "{{ csrf_token }}"
+            }
+          })
+          childData.setTexture('soldOut')
+        }
+      })
+    }
+
+    function update() {}
+
+    let config = {
+      type: Phaser.AUTO,
+      width: window_width,
+      height: window_height,
+      backgroundColor: '#ffffff',
+      scene: {
+        preload: preload,
+        create: create,
+        update: update
+      },
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+      },
+      pixelArt: false,
+      render: {
+        antialias: true
+      }
+    }
+    var game = new Phaser.Game(config)
+  </script>
+{% endblock script %}

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{%load static%}
+{% block script %}
+<script src={% static 'js/window.js' %}></script>
+<script>
+
+    function preload(){
+        this.load.scenePlugin({
+            key: 'rexuiplugin',
+            url: 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexuiplugin.min.js',
+            sceneKey: 'rexUI'
+        });
+        // 기본
+        this.add.text(53, 80, '현재 회원님께 가장 알맞는 상품은...', {color:'black', font:'450 18px Arial'})
+        // 아이템 이름
+        this.add.text(75, 170, '캐롯 카로틴 카밍 워터 패드', {color:'black', font:'450 18px Arial'})
+        // 분석
+        this.add.text(53, 500, '노폐물제거, 모든피부용, 페이스용, 스크럽형', {color:'black', font:'450 14px Arial'})
+
+        //image
+        this.load.image('item', "{% static '/resource/ui/analysis/recsys_exp.jpg'%}")
+
+        //ui
+        this.load.image('mainline', "{% static '/resource/ui/main/mainline.png'%}")
+        this.load.image('home', "{% static '/resource/ui/main/home.png'%}")
+        this.load.image('store', "{% static '/resource/ui/main/store.png'%}")
+        this.load.image('analysis', "{% static '/resource/ui/main/analysis.png'%}")
+        this.load.image('logout', "{% static '/resource/ui/main/logout.png'%}")
+        this.load.image('background', "{% static '/resource/ui/analysis/background.png'%}")
+
+    }
+    function create(){
+        item = this.physics.add.staticGroup();
+        test_item = this.add.image(188, 334, 'item').setScale(0.80).setInteractive({cursor:'pointer'})
+        test_item.on('pointerdown', function(event){
+            location.replace('https://shopping.naver.com/beauty/stores/1000009464/products/5036447034?NaPm=ct%3Dlce5w1ms%7Cci%3Dshoppingwindow%7Ctr%3Dswl%7Chk%3D6176104fb35b62634549ad78cd2d60e59a7aecc1%7Ctrx%3D')
+        })
+
+        this.add.image(window_width/2, window_height+30, 'mainline')
+
+        var home = this.add.image(window_width*0.17,window_height-36, 'home').setInteractive({cursor:'pointer'})
+
+        var analysis = this.add.image(window_width*0.4,window_height-36,'analysis').setInteractive({cursor:'pointer'})
+
+        var store = this.add.image(window_width*0.63,window_height-37,'store').setInteractive({cursor:'pointer'})
+
+        var exit = this.add.image(window_width*0.85, window_height-36, 'logout').setInteractive({cursor:'pointer'})
+
+        home.on('pointerdown', function(event){
+            window.location.href = `/mainapp/main`
+        })
+  
+        store.on('pointerdown', function(event){
+            window.location.href = `/mainapp/store`
+        })
+
+        analysis.on('pointerdown', function(event){
+            window.location.href = `/mainapp/analysis`
+        })
+
+        exit.on('pointerdown', function(event){
+            window.location.href = `/accounts/logout`
+        })
+        
+        
+    }
+    function update(){
+
+    }
+
+
+    let config = {
+        type: Phaser.AUTO,
+        width: window_width,
+        height: window_height,
+        physics: {
+            default: 'arcade',
+            arcade: {
+                debug: false,
+                gravity: {
+                    y: 0
+                }
+            }
+        },
+        backgroundColor: '#ffffff',
+        scene: {
+          preload: preload,
+          create: create,
+          update:update,
+        },
+        scale: {
+            mode: Phaser.Scale.ScaleModes.FIT,
+            autoCenter: Phaser.Scale.CENTER_BOTH,
+        },
+        pixelArt: false,
+        render:{
+          antialias: true
+        },
+      }
+      let game =  new Phaser.Game(config)
+</script>
+{% endblock script %}

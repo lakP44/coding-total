@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{%load static%}
+{% block script %}
+  <script src={% static 'js/window.js' %}></script>
+  <script>
+    function preload() {
+
+      this
+        .load
+        .scenePlugin({key: 'rexuiplugin', url: 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexuiplugin.min.js', sceneKey: 'rexUI'});
+
+      this
+        .load
+        .image('text', "{% static '/resource/ui/analysis/text.png'%}")
+      this
+        .load
+        .image('mainline', "{% static '/resource/ui/main/mainline.png'%}")
+      this
+        .load
+        .image('home', "{% static '/resource/ui/main/home.png'%}")
+      this
+        .load
+        .image('store', "{% static '/resource/ui/main/store.png'%}")
+      this
+        .load
+        .image('analysis', "{% static '/resource/ui/main/analysis.png'%}")
+      this
+        .load
+        .image('logout', "{% static '/resource/ui/main/logout.png'%}")
+      this
+        .load
+        .image('background', "{% static '/resource/ui/analysis/background.png'%}")
+      this
+        .load
+        .image('layout', "{% static '/resource/ui/analysis/layoutA.png'%}")
+      this
+        .load
+        .image('recsys', "{% static '/resource/ui/analysis/button.png'%}")
+      this
+        .load
+        .image('userImg', "{% static '/resource/ui/analysis/userImage2.jpg'%}")
+    }
+
+    function create() {
+
+      var text = this
+        .add
+        .image(65, 35, 'text')
+        .setScale(0.37)
+
+      this
+        .add
+        .image(window_width / 2, window_height + 30, 'mainline')
+
+      var background = this
+        .add
+        .image(window_width / 2, 220, 'background')
+        .setScale(0.4)
+
+      var home = this
+        .add
+        .image(window_width * 0.17, window_height - 36, 'home')
+        .setInteractive({cursor: 'pointer'})
+
+      var analysis = this
+        .add
+        .image(window_width * 0.4, window_height - 36, 'analysis')
+        .setInteractive({cursor: 'pointer'})
+
+      var store = this
+        .add
+        .image(window_width * 0.63, window_height - 37, 'store')
+        .setInteractive({cursor: 'pointer'})
+
+      var exit = this
+        .add
+        .image(window_width * 0.85, window_height - 36, 'logout')
+        .setInteractive({cursor: 'pointer'})
+
+      var layout = this
+        .add
+        .image(window_width / 2, window_height * 0.73, 'layout')
+
+      this
+        .add
+        .image(window_width / 2, window_height * 0.3, 'userImg')
+        .setScale(1.0)
+
+      // 추천
+
+      let recsys = this
+        .add
+        .image(window_width * 0.7, window_height * 0.58, 'recsys')
+        .setInteractive({cursor: 'pointer'})
+
+      recsys.on('pointerdown', function (event) {
+        window.location.href = `/mainapp/recsys`
+      })
+
+      home.on('pointerdown', function (event) {
+        window.location.href = `/mainapp/main`
+      })
+
+      store.on('pointerdown', function (event) {
+        window.location.href = `/mainapp/store`
+      })
+
+      analysis.on('pointerdown', function (event) {
+        window.location.href = `/mainapp/analysis`
+      })
+
+      exit.on('pointerdown', function (event) {
+        window.location.href = `/accounts/logout`
+      })
+    }
+
+    function update() {}
+
+    let config = {
+      type: Phaser.AUTO,
+      width: window_width,
+      height: window_height,
+      backgroundColor: '#ffffff',
+      scene: {
+        preload: preload,
+        create: create,
+        update: update
+      },
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+      },
+      pixelArt: false,
+      render: {
+        antialias: true
+      }
+    }
+    let game = new Phaser.Game(config)
+  </script>
+{% endblock script %}

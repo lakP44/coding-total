@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>06-17</title>
+  <link rel="stylesheet" 
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+  <style>
+      .layout1 { margin:30px 30px 30px 30px; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+<div id="example" class="container layout1">
+    <p><input type="text" v-model="amount" class="form-control" /></p>
+    <p>
+        <button id="deposit" v-on:click="deposit" class="btn btn-primary">예금</button>
+        <button id="withdraw" v-on:click="withdraw" class="btn btn-primary">인출</button>
+    </p>            
+    <h3>계좌 잔고 : {{balance}}</h3>
+</div>
+
+<script type="text/javascript">
+
+</script>
+</body>
+</html>

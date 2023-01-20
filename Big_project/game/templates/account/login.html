@@ -1,0 +1,80 @@
+{% extends "account/auth_base.html" %}
+{% load i18n %}
+{% load account socialaccount %}
+
+{% comment %} 수정 코드 {% endcomment %}
+{% block style %}
+{% endblock style %}
+
+
+
+{% block content %}
+
+{% get_providers as socialaccount_providers %}
+
+<div class="container">
+  {% include 'core/components/back-button.html' %}
+  <div class="mb-8 custom-mb">
+    <h1>Welcome!</h1>
+    <p class="fs-3">닉네임과 비밀번호를 입력하여 로그인해주세요</p>
+  </div>
+
+  {% comment %} 어디에 쓰는거? {% endcomment %}
+  {% include "socialaccount/snippets/login_extra.html" %}
+
+  
+  <!-- form -->
+  <form class="login" method="POST" action="{% url 'account_login' %}">
+    {% csrf_token %}
+
+    {{ form.non_field_errors | safe }}
+
+    <!-- {{ form.as_p }} -->
+
+    <div class="form-outline custom-mb">
+        <input id="id_login" name="login" class="input-form form-control" required/>
+        <label class="form-label" for="id_login">Username</label>
+    </div>
+    <div class="form-outline custom-mb">
+        <input type="password" id="id_password" name="password" class="input-form form-control" required/>
+        <label class="form-label" for="id_password">Password</label>
+    </div>
+
+    {% if redirect_field_value %}
+    <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+    {% endif %}
+
+    <!-- 비밀번호 초기화 -->
+    <a class="button secondaryAction" href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a>
+
+    <!-- social login btn group -->
+    <div class="d-flex justify-content-evenly custom-mb">
+      <a class="btn text-white btn-lg btn-floating" style="background-color: #FEE500;" href="/accounts/kakao/login/" role="button">
+        <i class="fas fa-comment fa-kakao"></i>
+      </a>
+      <a class="btn text-white btn-lg btn-floating" style="background-color: #03C75A;" href="/accounts/naver/login/" role="button">
+        <i class="fas fa-naver"></i>
+      </a>
+      <a class="btn text-white btn-lg btn-floating" style="background-color: #111;" href="/accounts/google/login/" role="button">
+        <i class="fab fa-apple"></i>
+      </a>
+    </div> 
+
+    <!-- local login btn -->
+    <div class="d-flex justify-content-center custom-mb">
+      <button class="btn text-white btn-lg fs-5 px-5 auth-btn" style="background-color: #ac2bac;" type="submit" role="button">
+        login
+      </button>
+    </div>
+    
+  </form>
+  
+  <!-- local join -->
+  <div class="d-flex justify-content-center custom-mb">
+    <button class="btn text-white btn-lg fs-5 px-5 auth-btn" style="background-color: #ac2bac;" role="button">
+      <a id="join-a" href="{{ signup_url }}">join</a>
+    </button>
+  </div>
+ 
+</div>
+{% endblock content %}
