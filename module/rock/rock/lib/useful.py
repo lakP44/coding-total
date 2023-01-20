@@ -118,3 +118,23 @@ def check_features(data):
     print(num)
     
     return cat, num
+##############################################################################################################
+def check_unique(data, feature, num1):
+    '''
+    data = data, feature = 원하는 feature 리스트를 넣을 수 있습니다, 0으로 설정하면 모든 feature가 들어갑니다, num1 = 출력할 nunique의 개수 기준을 지정합니다 ex) 3이면 3이상의 nunique를 가진 feature만 출력됨
+    '''
+    if feature == 0:
+        feature = list(data.columns)
+
+    name = []
+    num = []
+    real_name = []
+
+    for i in feature:
+        if data[i].nunique() >= num1:
+            real_name.append(i)
+            name.append(data[i].unique())
+            num.append(data[i].nunique())
+    unique_df1 = pd.DataFrame({'real_name' : real_name , 'name' : name, 'num' : num})
+    unique_df1.sort_values(by = 'num', inplace = True)
+    return unique_df1

@@ -1,0 +1,22 @@
+결측치 처리 :  KNN imputer를 사용하면 매우 좋아짐
+		MissForest도 결측치를 채우는데 좋음
+		iterativeimputer로 결측치를 채워도 좋음
+
+변수는 삭제 안하는게 좋음 (절대 그냥 삭제하지 말것), 그냥 일단 다 쓰는게 거의 best
+변수끼리의 관계를 알아봐야함 ex) url_len = url_domain_len + url_path_len 이런식으로
+
+베이지안 옵티마이저 : 어느 입력값을 받는 미지의 목적함수를 생성하여 해당 함수값을 최
+대로 만드는 최적해를 찾는 것을 목적으로 하는거 <-- 하이퍼파라미터 튜닝
+
+catboostclassifier : 범주형 예측에 성능이 좋은 모델
+
+stacking 앙상블 :   원본 데이터의 train, test가 존재
+			원본 training data를 3개의 머신러닝 모델이 학습
+			각 모델마다 X_test를 넣어서 예측 후 predict를 뽑아냄 (3개의 predict된 값)
+			3개의 predict를 다시 학습 데이터로 사용
+			최종 model을 하나 선정해 학습
+			최종 평가
+
+로지스틱 회귀분석으로 각 feature당 p value 구해보기 --> 0.05 이하인지
+
+결측치 채우는법, 스케일러, 모델 찾아보기
