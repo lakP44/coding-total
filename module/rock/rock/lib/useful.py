@@ -37,7 +37,7 @@ def checkNAN(df):
 def handle_NAN(df, list_lists, fill_na, fill_value, back_fill, front_fill, linear, KNN):
     '''
     df = data, list_lists = 결측치 처리를 원하는 컬럼을 이중 리스트로 넣어줌 ex) [['Age'], ['Embarked', 'Cabin']]
-    fill_na = [처리할 순서, 채울 값], fill_value = [처리할 순서, 채울 값들 ex) ['S', 'S']], back_fill = 처리할 순서
+    fill_na = [처리할 순서, 채울 값], fill_value = [처리할 순서, 채울 값들] ex) [순서, ['S', 'S']], back_fill = 처리할 순서
     front_fill = 처리할 순서, linear = 처리할 순서, KNN = [처리할 순서, n_neighbors 값]
     '''
     imputer = KNNImputer(n_neighbors = KNN[1])
@@ -86,7 +86,6 @@ def NAN_preview(data, col_list, fill_na, fill_value, back_fill, front_fill, line
     '''
     nan_df = checkNAN(data)
     display(nan_df)
-    print('=='*20)
 
     sequence_view = [data, col_list, fill_na, fill_value, back_fill, front_fill]
     sequence_num = sequence_view[2 : len(sequence_view)]
@@ -95,9 +94,6 @@ def NAN_preview(data, col_list, fill_na, fill_value, back_fill, front_fill, line
                                 'func_list' : ['fill_na', 'fill_value', 'backfill', 'front_fill', 'linear', 'KNN'], 
                                 'parameter' : [fill_na[1], fill_value[1], 'none', 'none', 'none', KNN[1]]})
     sequence_dic = sequence_dic.sort_values('func')
-
-
-    display(sequence_dic)
 
     sequence_dic = sequence_dic[sequence_dic['func'] >= 0]
     sequence_dic['columns'] = col_list
@@ -114,8 +110,8 @@ def check_features(data):
     num = list(set(list(data.select_dtypes("int").columns) + list(data.select_dtypes("float").columns)))
     # include_word_feats1 = [s for s in data if "변수에 포함된 단어" in s]
     # include_word_feats2 = [s for s in data if "변수에 포함된 단어" in s]
-    print(cat)
-    print(num)
+    print("categorical_features: " + str(cat))
+    print("numerical_features: " + str(num))
     
     return cat, num
 ##############################################################################################################
@@ -138,3 +134,14 @@ def check_unique(data, feature, num1):
     unique_df1 = pd.DataFrame({'real_name' : real_name , 'name' : name, 'num' : num})
     unique_df1.sort_values(by = 'num', inplace = True)
     return unique_df1
+##############################################################################################################
+def how_to_use_handle_NAN():
+    print("# ex) (If you put -1 in the order, it won't run.)")
+    print("df = data")
+    print("list = [['for_fill_na'], ['for_fill_value1', 'for_fill_value2'], ['for_back_fill'], ['for_front_fill'], ['for_linear'], ['for_KNN_imputer1', 'for_KNN_imputer2']]")
+    print("fill_na = [ 0, Value_to_fill ] # <-- (The number that goes into the first digit is the order of processing.)")
+    print("fill_value = [ 1, [ Value_to_fill1, Value_to_fill2 ]]")
+    print("back_fill = 2")
+    print("front_fill = 3")
+    print("linear = 4")
+    print("KNN = [ 5, n_neighbors ]")
