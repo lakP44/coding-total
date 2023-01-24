@@ -16,3 +16,4 @@
     - NAN_preview
     - check_features
     - check_unique
+    - how_to_use_handle_NAN
