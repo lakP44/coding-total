@@ -1,0 +1,159 @@
+Posted by Contents&Education
+2022.12.22.16:58
+ 2	UP
+[LG 3rd Public / Private rank Solution]
+Residual NeuMF 
++ Various Seeds ensembling 
+
++ Adaptive Negative Sampling for better generalization 
+
++ Additional Post processing with view-count info
+
+
+
+[Overview & Model Selection]
+
+저는 Recommendation system은 처음 다루는거라 SOTA 모델들 및 논문들부터 확인했습니다.
+
+대부분 Autorec이라는 Autoencoder을 base로 한 모델들이 주로 좋은 결과를 내는 것을 확인했습니다만
+
+Autorec 기반의 모델들은 이번 대회의 특성과는 맞지 않다고 생각했습니다.
+
+
+
+Autorec은 item들은 모두 user의 embedding을 찾기위해 사용될뿐, item 자체에 대한 embedding을 찾지는 않습니다.
+
+반면 NeuMF 계열은 user와 item 모두 embedding을 찾도록 설계되어있습니다.
+
+
+
+이는 새로운 컨텐츠가 추가되었을때 새로운 item에 대한 embedding을 찾을 수 있다면
+
+바로 제작된 모델에 넣어 각 user별 새로운 item에 대한 선호도를 확인할 수 있습니다.
+
+
+반면 Autorec 계열은 단한개의 item이 추가되더라도 모든 트레이닝을 반드시 다시 해야된다는 단점이 존재했습니다.
+
+따라서 NeuMF 계열의 모델들을 집중적으로 실험했습니다.
+
+
+
+
+[Model Specification]
+
+NeuMF baseline에 여러가지 실험을 진행했습니다. 
+
+MLP길이를 늘리고 줄이고 크기를 줄이고 하였으며, Resnet 혹은 Unet 구조로 만들어보는 등 모두 실제 도움이 되지 않았습니다.
+
+
+신기하게도 가장 짧게 구성한 MLP에서 결과가 좋았습니다.
+
+제가 말한 Residual NeuMF의 경우 최종 concat된 torch.cat([mlpoutput, mfoutput], dim=-1) 의 형태를 가집니다
+
+
+
+저는 여기에
+
+muls = torch.mul(userembeddingmlp, itemembeddingmlp)
+
+output = torch.cat([mlpoutput, mfoutput, muls], dim=-1)
+
+
+이렇게 userembeddingmlp, itemembeddingmlp를 torch.mul 시킨뒤
+
+최종 concat단에 추가해서 residual하게 한번더 마지막단에 위치시켰습니다.
+
+
+
+이는 추가적인 약간의 성능 향상이 있었습니다.
+
+
+
+[Adaptive Negative sampling] 
+
+아이디별로 시청횟수가 수백건 이상인 경우와 10번이 되지 않는 아이디도 있기 때문에
+
+만약 모든 아이디별로 negative sampling ratio를 일정하게 구성하면
+
+각 아이디별 embedding이 overfitting & underfitting이 공존하게 될거라 생각했습니다.
+
+
+따라서 아이디별 시청횟수에 따라 많게는 negative sampling ratio를 120, 적게는 5개로 구성했습니다.
+
+
+
+
+[Various Seeds ensembling]
+
+Seed를 다양하게 하여 5개 모델 ensembles를 만들었습니다.
+
+Seed가 다르면 아이디별 negative sampling시에 다양하게 다른 item들이 들어가게 되어 generalization에 도움이 된다고 생각했습니다.
+
+ex) seed 42)  id 3  positive samples 3, 15, 26, 12   |   negative samples 1, 252, 35, 13
+
+      seed 84)  id 3  positive samples 3, 15, 26, 12   |   negative samples 2, 7, 124, 15
+
+
+
+
+[Additional Information Processing]
+
+이번 대회에서는 item에 대한 정보, user에 대한 정보들을 다양하게 주어졌습니다.
+
+저 또한 다양한 정보를 어떻게 활용할지를 고민했고 실험해보았으나, 결과적으로 모두 빼는 것이 결과적으로 제일 좋았습니다.
+
+
+
+제 개인적인 추론은, 이미 어떤 item을 시청하였는가를 통해서 추가 정보가 포함되었을 거라는 것,
+
+그리고 이러한 추가정보가 오히려 방해될 수 있다는 것을 유추할 수 있습니다. 
+
+
+
+다만 저는 아무리 한가지 item을 여러번 시청하더라도
+
+그에 대한 정보는 NeuMF에 포함되지 못한다는 점에서 추가적인 방안이 필요하다고 생각했습니다.
+
+
+
+예를들어 50번을 넘게 시청한 item과 단 한번 시청한 item을 negative sampling 속
+
+‘1’로 처리하는 점에서 개선이 필요하다고 생각했습니다.
+
+
+
+그래서 아이디별 아이템 시청횟수를 일종의 score로 두고  CrossEntropy가 아닌
+
+MSE로 트레이닝 시켜보기도 했지만 결과가 좋지 않았습니다.
+
+
+
+
+[Post-Processing]
+
+따라서 아이디별 아이템 시청횟수를 결과에 추가하는 방안을 따로 구성했습니다.
+
+아이디별 아이템 시청횟수가 가장 많았던 Top 5를 따로 최종 결과물에 넣었습니다.
+
+가장 많이 본 아이템 3개는 최종 25개 결과의 최상단에, 4,5번째는 최하단에 위치시켰습니다.
+
+물론 중복되지 않게 조치하였습니다.
+
+
+[Extra Methods]
+
+제가 training한 모델은 주로 batchsize 256 기준 epoch 10 이내에서 bestvalid 결과를 냈습니다.
+
+앞서 말했듯, id별 item별 선택된 수에 따라 underfitting될 가능성이 크기 때문에
+
+epoch 10 - 15 에서도 best_valid 모델을 뽑아냈습니다. 그렇게 두개의 모델을 save하고 ensemble화 했습니다.
+
+ex) best_valid model from epochs 0 - 9, score - 0.452
+
+      best_valid model from epochs 10 - 15, score - 0.445
+
+      Both models saved and used for ensembles
+
+
+
+      * 모두 한달동안 수고 많으셨습니다. 따스한 연말 보내시기 바랍니다 ^^*
