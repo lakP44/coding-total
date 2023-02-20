@@ -16,4 +16,4 @@ class my_bot(commands.Bot):
 
 
 bot = my_bot()
-bot.run('MTA3NzEzMzczMzIxNzQ0Nzk5MQ.GkW0KS.3U039wzNtmpKhLmlFbmZ4EUbCHS_C26tRSNBH4')
+bot.run('*************************************************************************************')
