@@ -3,7 +3,7 @@ import scipy.stats as spst
 import pandas as pd
 import scipy.stats as spst
 from statsmodels.graphics.mosaicplot import mosaic
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 import warnings  # 경고메세지 무시
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -122,9 +122,10 @@ def make_ANOVA_df(data, nume, p_value_v, cat):
 ##############################################################################################################
 
 
-def make_crosstab_df(data, cat1, cat2, u_num):
+def make_crosstab_df(data, cat1, cat2, u_num, draw_mosaic, chi_squared):
     '''
-    data = data, cat1 = 기준이 되는 범주형 변수 (ex) Survived, Transported), cat2 = 넣고싶은 모든 범주형 변수, u_num = unique 갯수 제한, (이 개수 이하의 unique값을 가진 변수만 사용됨)
+    data = data, cat1 = 기준이 되는 범주형 변수 (ex) Survived, Transported), cat2 = 넣고싶은 모든 범주형 변수, u_num = unique 갯수 제한, (이 개수 이하의 unique값을 가진 변수만 사용됨), draw_mosaic, chi_squared = True or False
+    crosstab과 인덱스마다의 이름을 반환합니다 --> return crosstab, name
     
     평균선과 하얀선이 겹칠수록 의미가 없음, 평균선(빨간선)에서 멀어질수록 의미가 있어짐
     '''
@@ -144,15 +145,25 @@ def make_crosstab_df(data, cat1, cat2, u_num):
     for n in cat2_list:
         # print(str(cat2_list[count]))
         # display(pd.crosstab(data[cat1], data[n]))
-        globals()["crosstab_{}".format(str(n))
-                  ] = pd.crosstab(data[cat1], data[n])
-        mosaic(data, [n, cat1])
-        plt.title("crosstab_" + str(n))
-        plt.axhline(1 - data[cat1].mean(), color='r')
-        plt.show()
-        print(f"x: {n}, y: {cat1}")
-        print("=="*35)
+        globals()["crosstab_{}".format(str(n))] = pd.crosstab(data[cat1], data[n])
+        if draw_mosaic:
+            mosaic(data, [n, cat1])
+            plt.title("crosstab_" + str(n))
+            plt.axhline(1 - data[cat1].mean(), color='r')
+            plt.show()
+            print(f"x: {n}, y: {cat1}")
+            print()
+            print("=="*35)
+        if chi_squared:
+            result = spst.chi2_contingency(globals()["crosstab_{}".format(str(n))])
+            print()
+            print(f"자유도: {(data[cat1].nunique()-1) * (data[n].nunique()-1)}")
+            print(f"카이제곱통계량 (보통 자유도의 2~3배면 의미가 있다고 봄): {result[0]}\np-value (보통 0.05이하부터 의미 --> 95%): {result[1]}\n기대빈도 (귀무가설이 기대되는 빈도, 서로 관련이 없을 수록 값이 커짐): \n{result[3]}")
+            print(f"대응: {n}, 기준: {cat1}")
+            print()
+            print("=="*35)
         a.append(str(globals()["crosstab_{}".format(str(n))]))
         b.append("crosstab_" + str(cat2_list[count]))
         count += 1
     print(b)
+    return a, b

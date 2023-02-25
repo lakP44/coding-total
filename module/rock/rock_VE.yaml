@@ -68,11 +68,13 @@ dependencies:
       - matplotlib==3.7.0
       - numpy==1.24.2
       - pandas==1.5.3
+      - patsy==0.5.3
       - pillow==9.4.0
       - pyparsing==3.0.9
       - pytz==2022.7.1
       - scikit-learn==1.2.1
       - scipy==1.10.1
       - seaborn==0.12.2
+      - statsmodels==0.13.5
       - threadpoolctl==3.1.0
-prefix: C:\Users\lak50\anaconda3\envs\rock_VE
+prefix: E:\anaconda3\envs\rock_VE
